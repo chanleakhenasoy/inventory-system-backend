@@ -7,3 +7,12 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE Suppliers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    supplier_name VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(255),
+    address VARCHAR(255),
+    company_name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+);
