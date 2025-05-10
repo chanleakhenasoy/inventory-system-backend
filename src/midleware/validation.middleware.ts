@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { describe } from "node:test";
 import { z } from "zod";
 
 const userSchema = z.object({
@@ -30,6 +31,11 @@ const supplierSchema = z.object({
   phone_number: z.string().optional(), 
   address: z.string().min(8),      
   company_name: z.string().min(3),           
+});
+const categorySchema = z.object({          
+  category_name: z.string().min(1), 
+  description:  z.string().min(1),
+           
 });
 
 
@@ -74,6 +80,23 @@ export const validateSupplier = (
 ): void => {
   try {
     supplierSchema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.errors[0].message });
+      return;
+    }
+    next(error);
+  }
+};
+
+export const validateCategory = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  try {
+    categorySchema.parse(req.body);
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
