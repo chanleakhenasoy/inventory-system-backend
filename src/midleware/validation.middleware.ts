@@ -38,6 +38,14 @@ const categorySchema = z.object({
            
 });
 
+const productSchema = z.object({          
+  product_code: z.string().min(1), 
+  name_en: z.string().min(1),
+  name_kh: z.string().min(1),
+  beginning_quantity: z.number().min(0),
+ 
+           
+});
 
 export const validateUser = (
   req: Request,
@@ -97,6 +105,22 @@ export const validateCategory = (
 ): void => {
   try {
     categorySchema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.errors[0].message });
+      return;
+    }
+    next(error);
+  }
+};
+export const validateProduct = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  try {
+    productSchema.parse(req.body);
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
