@@ -1,7 +1,9 @@
 export enum RoleEnum {
     ADMIN = "admin",
     USER = "user",
-  };
+    OFFICER = "officer",
+    MANAGER = "manager",
+}
 
 export enum Status {
   PENDING = 'PENDING',
