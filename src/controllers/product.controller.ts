@@ -4,48 +4,49 @@ import { CategoryModel } from "../models/category.model";
 import { ProductModel } from "../models/product.model";
 
 export const createProduct = async (req: Request, res: Response) => {
-    const { product_code, name_en, name_kh, beginning_quantity } = req.body;
-    const id = uuidv4();
-    try {
-      const productModel = new ProductModel();
-      const categoryModel = new CategoryModel();
-      console.log('=====================',categoryModel);
-      const existingProduct = await productModel.findOne(product_code, name_en, name_kh);
-  
-      if (existingProduct) {
-        res.status(409).json({ message: "Product has already exists." });
-      }
-      const category = await categoryModel.findById(id);
-      console.log('=====================',category?.id);
+  const { category_id } = req.params; 
+  const { product_code, name_en, name_kh, beginning_quantity } = req.body;
+  const id = uuidv4();
 
-      if (!category) {
-        res.status(404).json({ message: "Category not found." });
-        return;
-      }
-      const newProduct = new ProductModel({
-        id,
-        category_id: category.id,
-        product_code,
-        name_en,
-        name_kh,
-        beginning_quantity,
-        created_at: new Date(),
-        updated_at: new Date()
-      });
-  
-      console.log(newProduct);
-  
-      const data = await newProduct.create();
-  
-      res.status(201).json({ message: "Product create successfully.", data });
-      return;
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error." });
-      return;
+  try {
+    const productModel = new ProductModel();
+    const categoryModel = new CategoryModel();
+
+    // Check if product already exists
+    const existingProduct = await productModel.findOne(product_code, name_en, name_kh);
+    if (existingProduct) {
+       res.status(409).json({ message: "Product already exists." });
+       return;
     }
-  };
-  
+
+    // Validate category by ID from param
+    const category = await categoryModel.findById(category_id);
+    if (!category) {
+       res.status(404).json({ message: "Category not found." });
+       return;
+    }
+
+    // Create new product
+    const newProduct = new ProductModel({
+      id,
+      category_id,
+      product_code,
+      name_en,
+      name_kh,
+      beginning_quantity,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+    console.log(newProduct)
+
+    const data = await newProduct.create();
+
+    res.status(201).json({ message: "Product created successfully.", data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
 
 export const getAllProduct = async (req: Request, res: Response) => {
   try {
