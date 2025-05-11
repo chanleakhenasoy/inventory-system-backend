@@ -7,7 +7,7 @@ import { createProduct, deleteProduct, getAllProduct, getProductById, updateProd
 
 const router = Router();
 
-router.post("/create", validateProduct, protectRoute([RoleEnum.ADMIN,]), createProduct);
+router.post("/create/:category_id", validateProduct, protectRoute([RoleEnum.ADMIN,]), createProduct);
 router.get("/getAll",protectRoute([RoleEnum.ADMIN,]), getAllProduct);
 router.get("/:id",protectRoute([RoleEnum.ADMIN,]), getProductById);
 router.put("/:id",protectRoute([RoleEnum.ADMIN,]), updateProduct); 

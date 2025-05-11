@@ -34,6 +34,7 @@ export class ProductModel {
       this.Product.product_code,
       this.Product.name_en,
       this.Product.name_kh,
+      this.Product.beginning_quantity,
       this.Product.created_at,
       this.Product.updated_at,
     ];
@@ -76,27 +77,30 @@ export class ProductModel {
     return result.rows[0] || null;
   }
 
-  // Update supplier by ID
   async update(id: string, data: Partial<Product>): Promise<Product | null> {
     if (!data || Object.keys(data).length === 0) {
       throw new Error("Product data is required to update a product.");
     }
-
-    const fields = Object.keys(data)
-      .map((field, index) => `${field} = $${index + 1}`)
-      .join(", ");
-    const values = [...Object.values(data), id];
-
+  
+    // Automatically add updated_at field
+    data.updated_at = new Date();
+  
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+  
+    const setClause = keys.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
+  
     const query = `
       UPDATE products
-      SET ${fields}, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = $${values.length}
+      SET ${setClause}
+      WHERE id = $${keys.length + 1}
       RETURNING *
     `;
-    const result = await pool.query(query, values);
+  
+    const result = await pool.query(query, [...values, id]);
     return result.rows[0] || null;
   }
-
+  
   async delete(id: string): Promise<boolean> {
     const query = `DELETE FROM products WHERE id = $1`;
     const result = await pool.query(query, [id]);
