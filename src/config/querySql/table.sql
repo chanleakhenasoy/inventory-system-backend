@@ -38,4 +38,30 @@ CREATE TABLE products (
     REFERENCES categories(id) 
     ON DELETE CASCADE
 );
+CREATE TABLE invoice_stock_in (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    supplier_id UUID NOT NULL,
+    purchase_date DATE NOT NULL,
+    reference_number VARCHAR(255) NOT NULL,
+    due_date DATE NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_suppliers FOREIGN KEY (supplier_id) REFERENCES suppliers (id) ON DELETE CASCADE
+);
+
+CREATE TABLE stock_in_items(
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_stockIn_id UUID NOT NULL,
+    product_id UUID NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity >= 0),
+    unit_price NUMERIC(10, 2) NOT NULL CHECK (unit_price >= 0),
+    expire_date DATE NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_invoice_stock_in FOREIGN KEY ( invoice_stockIn_id) 
+        REFERENCES invoice_stock_in (id) ON DELETE CASCADE,
+    CONSTRAINT fk_products FOREIGN KEY (product_id) 
+        REFERENCES products (id) ON DELETE CASCADE
+);
+
 
