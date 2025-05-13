@@ -26,11 +26,12 @@ export class UserModel {
     }
     const hashPassword = encryptPassword(this.user.password);
     const query = `
-      INSERT INTO users (id, user_name, password, email, role, created_at, updated_at)
+      INSERT INTO users (id, user_name, email, role, password, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
     `;
-    const values = [this.user.id, this.user.user_name, hashPassword, this.user.email, this.user.role, this.user.created_at, this.user.updated_at];
+    const values = [this.user.id, this.user.user_name, this.user.email, this.user.role, hashPassword,
+      this.user.created_at, this.user.updated_at];
 
     await pool.query(query, values);
   }

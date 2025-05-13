@@ -91,5 +91,13 @@ export class CategoryModel {
     const query = `DELETE FROM categories WHERE id = $1`;
     const result = await pool.query(query, [id]);
     return result.rows[0] > 0;
+  } 
+  
+  async countTotalCategory(): Promise<number> {
+    const query = `SELECT COUNT(*) FROM categories`;
+    const result = await pool.query(query);
+    return parseInt(result.rows[0].count, 10);
   }
+
+
 }

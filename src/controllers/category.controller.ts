@@ -113,3 +113,17 @@ export const deleteCategory = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const getTotalCategory = async (req: Request, res: Response) => {
+  try {
+    const productModel = new CategoryModel();
+    const total = await productModel.countTotalCategory();
+    res
+      .status(200)
+      .json({ message: "Get category total successfully", data: total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+    return;
+  }
+};

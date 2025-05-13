@@ -6,14 +6,14 @@ import { RoleEnum } from "../utils/enum";
 import { v4 as uuidv4 } from "uuid";
 
 export const register = async (req: Request, res: Response) => {
-  const { user_name, password, email, role } = req.body;
+  const { user_name, email, role, password } = req.body;
   const id = uuidv4(); // Generate UUID if not provided
   const userModel = new UserModel({
+    id,
     user_name,
     email,
-    password,
-    id,
     role,
+    password,
     created_at: new Date(),
     updated_at: new Date(),
   });
@@ -63,6 +63,7 @@ export const login = async (req: Request, res: Response) => {
     res.status(200).json({
       message: "Login successful",
       token,
+      role: user.role,
     });
     return;
   } catch (error) {
