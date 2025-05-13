@@ -1,3 +1,4 @@
+import { log } from "console";
 import { Request, Response, NextFunction } from "express";
 import { describe } from "node:test";
 import { z } from "zod";
