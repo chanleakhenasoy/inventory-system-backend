@@ -17,6 +17,7 @@ export const register = async (req: Request, res: Response) => {
     created_at: new Date(),
     updated_at: new Date(),
   });
+  console.log(userModel);
 
   try {
     // Check if the user already exists
@@ -28,6 +29,7 @@ export const register = async (req: Request, res: Response) => {
 
     // Register the user
     await userModel.register();
+    console.log(userModel)
 
     res.status(201).json({ message: "User registered successfully" ,userModel});
     return;

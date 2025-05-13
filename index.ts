@@ -7,7 +7,7 @@ import stockInRouter from './src/routes/stockIn.route';
 import stockoutRouter from './src/routes/stockout.route';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use("/api/auth", authRouter);
