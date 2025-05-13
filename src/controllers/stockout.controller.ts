@@ -4,8 +4,9 @@ import { StockoutModel } from "../models/stockout.model";
 import { ProductModel } from "../models/product.model";
 
 export const createStockout = async (req: Request, res: Response) => {
-const { quantity, employee } = req.body;
+const { quantity} = req.body;
 const { product_id } = req.params;
+const { user_id } = req.params;
 const id = uuidv4();
 
 try {
@@ -21,7 +22,7 @@ const newStockout = new StockoutModel({
 id, 
 product_id,
 quantity,
-employee,
+employee: user_id,
 created_at: new Date(),
 updated_at: new Date(),
 });

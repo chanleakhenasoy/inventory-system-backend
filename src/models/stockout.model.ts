@@ -24,7 +24,7 @@ throw new Error("Stockout data is required to create a new stockout.");
 }
 
 const query = `
-INSERT INTO stockouts (id, product_name, quantity, employee, created_at, updated_at)
+INSERT INTO stock_out (id, product_id, quantity, employee, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *
 `;
