@@ -35,3 +35,18 @@ console.error(error);
 res.status(500).json({ message: "Internal server error." });
 }
 };
+
+export const getTotalStockOut = async (req: Request, res: Response) => {
+    try {
+      const stockOutModel = new StockoutModel();
+      const total = await stockOutModel.countTotalProducts();
+      res
+        .status(200)
+        .json({ message: "Get stock out total successfully", data: total });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error." });
+      return;
+    }
+  };
+

@@ -52,4 +52,10 @@ export class StockInItemModel {
     //   const result = await pool.query(query, [stock_in_id]);
     //   return result.rows;
     // }
+
+    async countTotalProducts(): Promise<number> {
+      const query = `SELECT COUNT(*) FROM stock_in_items`;
+      const result = await pool.query(query);
+      return parseInt(result.rows[0].count, 10);
+    }
   }
