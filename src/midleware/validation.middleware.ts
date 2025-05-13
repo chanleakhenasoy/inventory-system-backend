@@ -40,8 +40,7 @@ const categorySchema = z.object({
 });
 
 const stockoutSchema = z.object({          
-  quantity: z.number().min(0), 
-  employee: z.string().min(8),      
+  quantity: z.number().min(0)   
 });
 
 const productSchema = z.object({          
