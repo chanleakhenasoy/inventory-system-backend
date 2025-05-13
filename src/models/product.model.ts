@@ -106,4 +106,12 @@ export class ProductModel {
     const result = await pool.query(query, [id]);
     return result.rows[0] > 0;
   }
+
+  async countTotalProducts(): Promise<number> {
+    const query = `SELECT COUNT(*) FROM products`;
+    const result = await pool.query(query);
+    return parseInt(result.rows[0].count, 10);
+  }
 }
+
+

@@ -40,4 +40,10 @@ this.stockout.updated_at
 const result = await pool.query(query, values);
 return result.rows[0];
 }
+
+async countTotalProducts(): Promise<number> {
+    const query = `SELECT COUNT(*) FROM stock_out`;
+    const result = await pool.query(query);
+    return parseInt(result.rows[0].count, 10);
+  }
 }
