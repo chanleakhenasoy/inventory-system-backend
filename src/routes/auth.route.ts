@@ -7,7 +7,7 @@ import { RoleEnum } from "../utils/enum";
 
 const router = Router();
 
-router.post("/register",validateUser, protectRoute([RoleEnum.ADMIN,]), register);
+router.post("/register",validateUser, register);
 router.post("/login", validateLogin, login);
 
  export default router;
