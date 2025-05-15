@@ -42,16 +42,14 @@ export class StockInItemModel {
       const result = await pool.query(query, values);
       return result.rows[0];
     }
+
+     async findAll(): Promise<StockInItem[]> {
+        const query = `SELECT * FROM stock_in_items ORDER BY created_at DESC`;
+        const result = await pool.query(query);
+        return result.rows as StockInItem[];
+      }
   
-    // async findByStockInId(stock_in_id: string): Promise<StockInItem[]> {
-    //   const query = `
-    //     SELECT * FROM stock_in_items
-    //     WHERE stock_in_id = $1
-    //     ORDER BY expire_date
-    //   `;
-    //   const result = await pool.query(query, [stock_in_id]);
-    //   return result.rows;
-    // }
+
 
     async countTotalProducts(): Promise<number> {
       const query = `SELECT COUNT(*) FROM stock_in_items`;

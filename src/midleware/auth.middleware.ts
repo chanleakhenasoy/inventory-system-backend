@@ -10,7 +10,7 @@ declare module "express-serve-static-core" {
   }
 }
 
-// Middleware to protect routes and check roles
+
 const protectRoute = (roles: RoleEnum[] = [RoleEnum.USER]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {

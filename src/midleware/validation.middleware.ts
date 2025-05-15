@@ -30,7 +30,7 @@ const loginSchema = z.object({
 const supplierSchema = z.object({          
   supplier_name: z.string().min(1), 
   phone_number: z.string().optional(), 
-  address: z.string().min(8),      
+  address: z.string().min(0),      
   company_name: z.string().min(3),           
 });
 

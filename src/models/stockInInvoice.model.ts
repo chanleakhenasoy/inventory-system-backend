@@ -41,6 +41,12 @@ export class InvoiceStockInModel {
     const result = await pool.query(query, values);
     return result.rows[0];
   }
+  async findAll(): Promise<InvoiceStockIn[]> {
+    const query = `SELECT * FROM invoice_stock_in ORDER BY created_at DESC`;
+    const result = await pool.query(query);
+    return result.rows as InvoiceStockIn[];
+  }
+  
 
 //   async findOne(id: string): Promise<InvoiceStockIn | null> {
 //     const query = `
@@ -52,9 +58,5 @@ export class InvoiceStockInModel {
 //     return result.rows[0] || null;
 //   }
 
-//   async findAll(): Promise<InvoiceStockIn[]> {
-//     const query = SELECT * FROM stock_in ORDER BY created_at DESC;
-//     const result = await pool.query(query);
-//     return result.rows;
-//   }
+  
 }

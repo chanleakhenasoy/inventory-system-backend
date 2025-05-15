@@ -72,3 +72,31 @@ export const login = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const userModel = new UserModel();
+    const users = await userModel.findAll();
+    res
+      .status(200)
+      .json({ message: "Get all user successfully", data: users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userModel = new UserModel();
+
+    await userModel.delete(id);
+
+    res.status(200).json({ message: "User deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+    return;
+  }
+};

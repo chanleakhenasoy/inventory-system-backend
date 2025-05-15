@@ -3,6 +3,7 @@ import { InvoiceStockInModel } from "../models/stockInInvoice.model";
 import { StockInItemModel } from "../models/stockInItem.model";
 
 import { v4 as uuidv4 } from "uuid";
+import { pool } from "../config/db";
 
 export class StockInController {
   // Create Stock In
@@ -60,6 +61,33 @@ export class StockInController {
     }
   }
 
+  // Get All Stock In Invoices with Items (Short Code)
+// Get All Invoice Stock In with Items (Short Code)
+  // Get All Invoices with Stock Items
+  async getAllStockIn(req: Request, res: Response) {
+    try {
+      const query = `
+        SELECT 
+          isi.*, 
+          COALESCE(json_agg(sii.*) FILTER (WHERE sii.id IS NOT NULL), '[]') AS items
+        FROM invoice_stock_in isi
+        LEFT JOIN stock_in_items sii ON isi.id = sii.invoice_stockIn_id
+        GROUP BY isi.id
+        ORDER BY isi.created_at DESC;
+      `;
+      const result = await pool.query(query);
+      res.status(200).json({
+        message: "Invoices with Stock Items fetched successfully.",
+        invoices: result.rows,
+      });
+    } catch (error) {
+      console.error("Error fetching stock-in invoices:", error);
+      res.status(500).json({ message: "Internal server error." });
+    }
+  }
+
+
+
   async getTotalStockIn(req: Request, res: Response) {
     try {
       const stockInModel = new StockInItemModel();
@@ -73,4 +101,5 @@ export class StockInController {
       return;
     }
   }
+  
 }

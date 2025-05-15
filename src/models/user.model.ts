@@ -61,4 +61,18 @@ export class UserModel {
   
       return rows.length > 0 ? rows[0] : null;
     }
+
+    async findAll(): Promise<User[]> {
+      const query = `SELECT * FROM users`;
+      const result = await pool.query(query);
+      return result.rows;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const query = `DELETE FROM users WHERE id = $1`;
+    const result = await pool.query(query, [id]);
+    return result.rows[0] > 0;
+  }
+  
 }
+

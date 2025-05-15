@@ -13,9 +13,7 @@ router.get("/total", protectRoute([RoleEnum.ADMIN,]), getTotalCategory);
 router.get("/:id",protectRoute([RoleEnum.ADMIN,]), getCategoryById);
 router.put("/:id",protectRoute([RoleEnum.ADMIN,]), updateCategory); 
 router.delete("/:id",protectRoute([RoleEnum.ADMIN,]), deleteCategory);
- // Assuming you want to use the same getAllcategory function for total
-// router.put("/:id",protectRoute([RoleEnum.ADMIN,]), updateCategory);
-// Assuming you want to use the same create function for update
+ 
 
 
  export default router;
