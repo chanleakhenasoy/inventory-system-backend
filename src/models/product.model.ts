@@ -63,10 +63,31 @@ export class ProductModel {
   }
 
   async findAll(): Promise<Product[]> {
-    const query = `SELECT * FROM products ORDER BY created_at DESC`;
+    const query = `
+      SELECT 
+        p.id,
+        p.category_id,
+        c.category_name AS category_name,
+        p.product_code,
+        p.name_en,
+        p.name_kh,
+        p.beginning_quantity,
+        p.minimum_stock,
+        p.created_at,
+        p.updated_at
+      FROM 
+        products p
+      JOIN 
+        categories c 
+      ON 
+        p.category_id = c.id
+      ORDER BY 
+        p.created_at DESC
+    `;
     const result = await pool.query(query);
     return result.rows;
   }
+  
 
   // Get supplier by ID
   async findById(id: string): Promise<Product | null> {

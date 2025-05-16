@@ -8,13 +8,13 @@ import stockoutRouter from './src/routes/stockout.route';
 import cors from 'cors';
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3002;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })) // for form data
 var corsOptions = {
-  origin: "http://localhost:3000", // your frontend URL
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  origin: "http://localhost:3000", // your frontend URL
   credentials: true, // if you use cookies, auth, etc.
 };
 
