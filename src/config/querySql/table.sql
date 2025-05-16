@@ -64,4 +64,8 @@ CREATE TABLE stock_in_items(
         REFERENCES products (id) ON DELETE CASCADE
 );
 
+ALTER TABLE products 
+ADD COLUMN minimum_stock NUMERIC;
+
+
 
