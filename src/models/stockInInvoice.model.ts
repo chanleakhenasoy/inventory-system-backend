@@ -46,17 +46,53 @@ export class InvoiceStockInModel {
     const result = await pool.query(query);
     return result.rows as InvoiceStockIn[];
   }
+
+  async findAllStockIn(): Promise<InvoiceStockIn[]> {
+    const query = `
+      SELECT 
+        isi.id,
+        isi.supplier_id,
+        s.supplier_name,
+        isi.purchase_date,
+        isi.reference_number,
+        isi.due_date,
+        isi.created_at,
+        isi.updated_at,
+        json_agg(
+          json_build_object(
+            'id', sii.id,
+            'invoice_stockin_id', sii.invoice_stockIn_id,
+            'product_id', sii.product_id,
+            'quantity', sii.quantity,
+            'unit_price', sii.unit_price,
+            'expire_date', sii.expire_date,
+            'created_at', sii.created_at,
+            'updated_at', sii.updated_at,
+            'product_name', p.name_en
+          )
+        ) AS items
+      FROM invoice_stock_in isi
+      LEFT JOIN suppliers s ON isi.supplier_id = s.id
+      LEFT JOIN stock_in_items sii ON isi.id = sii.invoice_stockIn_id
+      LEFT JOIN products p ON sii.product_id = p.id
+      GROUP BY isi.id, s.supplier_name
+      ORDER BY isi.created_at DESC;
+    `;
+
+    const result = await pool.query(query);
+    return result.rows as InvoiceStockIn[];
+  }
   
 
-//   async findOne(id: string): Promise<InvoiceStockIn | null> {
-//     const query = `
-//       SELECT * FROM stock_in
-//       WHERE id = $1
-//       LIMIT 1
-//     `;
-//     const result = await pool.query(query, [id]);
-//     return result.rows[0] || null;
-//   }
+  async findOne(id: string): Promise<InvoiceStockIn | null> {
+    const query = `
+      SELECT * FROM stock_in
+      WHERE id = $1
+      LIMIT 1
+    `;
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+  }
 
   
 }

@@ -47,9 +47,7 @@ export class StockInItemModel {
         const query = `SELECT * FROM stock_in_items ORDER BY created_at DESC`;
         const result = await pool.query(query);
         return result.rows as StockInItem[];
-      }
-  
-
+    }
 
     async countTotalProducts(): Promise<number> {
       const query = `SELECT COUNT(*) FROM stock_in_items`;

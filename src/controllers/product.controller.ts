@@ -5,7 +5,7 @@ import { ProductModel } from "../models/product.model";
 
 export const createProduct = async (req: Request, res: Response) => {
   const { category_id } = req.params; 
-  const { product_code, name_en, name_kh, beginning_quantity } = req.body;
+  const { product_code, name_en, name_kh, beginning_quantity, minimum_stock } = req.body;
   const id = uuidv4();
 
   try {
@@ -34,6 +34,7 @@ export const createProduct = async (req: Request, res: Response) => {
       name_en,
       name_kh,
       beginning_quantity,
+      minimum_stock,
       created_at: new Date(),
       updated_at: new Date()
     });

@@ -7,6 +7,7 @@ export interface Product {
   name_en: string;
   name_kh: string;
   beginning_quantity: number;
+  minimum_stock: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -24,8 +25,8 @@ export class ProductModel {
     }
 
     const query = `
-      INSERT INTO products (id, category_id, product_code, name_en, name_kh, beginning_quantity, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO products (id, category_id, product_code, name_en, name_kh, beginning_quantity, created_at, updated_at, minimum_stock)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
     const values = [
@@ -37,6 +38,7 @@ export class ProductModel {
       this.Product.beginning_quantity,
       this.Product.created_at,
       this.Product.updated_at,
+      this.Product.minimum_stock,
     ];
 
     const result = await pool.query(query, values);
