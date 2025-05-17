@@ -41,6 +41,28 @@ const result = await pool.query(query, values);
 return result.rows[0];
 }
 
+async findAll(): Promise<StockOut[]> {
+  const query = `
+    SELECT 
+      stock_out.*, 
+      products.name_en, 
+      users.user_name 
+    FROM 
+      stock_out 
+    JOIN 
+      products ON stock_out.product_id::uuid = products.id 
+    JOIN 
+      users ON stock_out.employee::uuid = users.id 
+    ORDER BY 
+      stock_out.created_at DESC;
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+}
+
+
+
+
 async countTotalProducts(): Promise<number> {
     const query = `SELECT COUNT(*) FROM stock_out`;
     const result = await pool.query(query);
