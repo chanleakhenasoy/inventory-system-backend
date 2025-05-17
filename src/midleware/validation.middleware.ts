@@ -76,6 +76,8 @@ export const validateLogin = (
   next: NextFunction
 ): void => {
   try {
+    // console.log("----------- req.body", req.body);
+    
     loginSchema.parse(req.body);
     next();
   } catch (error) {
