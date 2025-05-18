@@ -86,13 +86,12 @@ export const getProductById = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { product_code, name_en, name_kh, beginning_quantity } = req.body;
+    const { product_code, name_en, name_kh, beginning_quantity, minimum_stock} = req.body;
     const productModel = new ProductModel();
 
-    // Check if supplier exists
     const existingProduct = await productModel.findById(id);
     if (!existingProduct) {
-      res.status(404).json({ message: "Supplier not found." });
+      res.status(404).json({ message: "Product not found." });
       return;
     }
 
@@ -102,6 +101,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         name_en,
         name_kh,
         beginning_quantity,
+        minimum_stock,
         created_at: new Date(),
         updated_at: new Date(),
     });
