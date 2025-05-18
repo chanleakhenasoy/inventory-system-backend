@@ -89,16 +89,27 @@ export class ProductModel {
   }
   
 
-  // Get supplier by ID
-  async findById(id: string): Promise<Product | null> {
-    const query = `
-      SELECT * FROM products
-      WHERE id = $1 
-      LIMIT 1
-    `;
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
-  }
+async findById(id: string): Promise<Product | null> {
+  const query = `
+    SELECT 
+      p.id,
+      p.name_en,
+      p.name_kh,
+      p.product_code,
+      p.beginning_quantity,
+      p.minimum_stock,
+      p.category_id,
+      c.category_name
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.id = $1
+    LIMIT 1
+  `;
+  
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+}
+
 
   async update(id: string, data: Partial<Product>): Promise<Product | null> {
     if (!data || Object.keys(data).length === 0) {
