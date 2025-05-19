@@ -49,9 +49,23 @@ export class StockInItemModel {
         return result.rows as StockInItem[];
     }
 
-    async countTotalProducts(): Promise<number> {
-      const query = `SELECT COUNT(*) FROM stock_in_items`;
+    async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {
+      const query = `
+        SELECT 
+          p.name_en, 
+          COALESCE(SUM(sii.quantity), 0) AS total_quantity
+        FROM 
+          products p
+        LEFT JOIN 
+          stock_in_items sii ON p.id = sii.product_id
+        GROUP BY 
+          p.name_en
+        ORDER BY 
+          p.name_en;
+      `;
       const result = await pool.query(query);
-      return parseInt(result.rows[0].count, 10);
+      return result.rows;
     }
+    
+    
   }
