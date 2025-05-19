@@ -2,7 +2,7 @@ import { pool } from "../config/db";
 
 export interface StockInItem {
     id: string;
-    invoice_stockIn_id: string;
+    invoice_stockin_id: string;
     product_id: string;
     quantity: number;
     unit_price: number;
@@ -24,13 +24,13 @@ export class StockInItemModel {
       }
   
       const query = `
-        INSERT INTO stock_in_items (id, invoice_stockIn_id, product_id, quantity, unit_price, expire_date, created_at, updated_at)
+        INSERT INTO stock_in_items (id, invoice_stockin_id, product_id, quantity, unit_price, expire_date, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
       `;
       const values = [
         this.StockInItem.id,
-        this.StockInItem.invoice_stockIn_id,
+        this.StockInItem.invoice_stockin_id,
         this.StockInItem.product_id,
         this.StockInItem.quantity,
         this.StockInItem.unit_price,

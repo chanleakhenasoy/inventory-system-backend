@@ -6,15 +6,17 @@ import { v4 as uuidv4 } from "uuid";
 import { pool } from "../config/db";
 
 export class StockInController {
-  // Create Stock In
-  async createStockInInvoice(req: Request, res: Response) {
+  async createStockIn(req: Request, res: Response) {
     try {
-      const { purchase_date, reference_number, due_date } = req.body;
-      const id = uuidv4();
-      const { supplier_id } = req.params;
-      console.log("supplier_id", supplier_id);
+      const { purchase_date, reference_number, due_date, quantity, unit_price, expire_date } = req.body;
+      const { supplier_id, product_id } = req.params;
+
+      // Generate invoice id
+      const invoiceId = uuidv4();
+
+      // Create invoice
       const stockInInvoiceModel = new InvoiceStockInModel({
-        id,
+        id: invoiceId,
         supplier_id,
         purchase_date,
         reference_number,
@@ -24,25 +26,10 @@ export class StockInController {
       });
 
       const invoice = await stockInInvoiceModel.create();
-      res
-        .status(201)
-        .json({ message: "Invoice created successfully.", invoice });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error." });
-    }
-  }
 
-  // Create Stock In Item
-  async createStockInItem(req: Request, res: Response) {
-    try {
-      const { quantity, unit_price, expire_date } = req.body;
-      const id = uuidv4();
-      const { invoice_stockIn_id } = req.params;
-      const { product_id } = req.params;
       const stockInItemModel = new StockInItemModel({
-        id,
-        invoice_stockIn_id,
+        id: uuidv4(),
+        invoice_stockin_id: invoiceId,
         product_id,
         quantity,
         unit_price,
@@ -52,15 +39,21 @@ export class StockInController {
       });
 
       const stockInItem = await stockInItemModel.create();
-      res
-        .status(201)
-        .json({ message: "stockInItem created successfully.", stockInItem });
+
+      res.status(201).json({
+        message: "Invoice and stock-in item created successfully.",
+        invoice,
+        item: stockInItem,
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error." });
     }
   }
 
+
+  // Create Stock In Item
+  
   // async getAllStockIn(req: Request, res: Response) {
   //   try {
   //     const query = `
