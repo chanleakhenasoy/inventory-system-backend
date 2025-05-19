@@ -68,7 +68,8 @@ export class InvoiceStockInModel {
             'expire_date', sii.expire_date,
             'created_at', sii.created_at,
             'updated_at', sii.updated_at,
-            'product_name', p.name_en
+            'name_en', p.name_en,
+            'name_kh', p.name_kh
           )
         ) AS items
       FROM invoice_stock_in isi
@@ -78,7 +79,7 @@ export class InvoiceStockInModel {
       GROUP BY isi.id, s.supplier_name
       ORDER BY isi.created_at DESC;
     `;
-
+  
     const result = await pool.query(query);
     return result.rows as InvoiceStockIn[];
   }

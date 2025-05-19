@@ -46,6 +46,7 @@ async findAll(): Promise<StockOut[]> {
     SELECT 
       stock_out.*, 
       products.name_en, 
+      products.name_kh, 
       users.user_name 
     FROM 
       stock_out 
@@ -59,6 +60,7 @@ async findAll(): Promise<StockOut[]> {
   const result = await pool.query(query);
   return result.rows;
 }
+
 
 
 

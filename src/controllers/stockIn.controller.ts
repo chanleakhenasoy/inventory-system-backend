@@ -126,7 +126,7 @@ export class StockInController {
   async getTotalStockIn(req: Request, res: Response) {
     try {
       const stockInModel = new StockInItemModel();
-      const total = await stockInModel.countTotalProducts();
+      const total = await stockInModel.countProductsInStock();
       res
         .status(200)
         .json({ message: "Get stock in total successfully", data: total });
