@@ -11,7 +11,7 @@ declare module "express-serve-static-core" {
 }
 
 
-const protectRoute = (roles: RoleEnum[] = [RoleEnum.USER]) => {
+const protectRoute = (roles: RoleEnum[] = [RoleEnum.OFFICER]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const authHeader = req.headers.authorization;
