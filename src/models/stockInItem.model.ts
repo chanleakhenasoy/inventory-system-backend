@@ -49,6 +49,17 @@ export class StockInItemModel {
         return result.rows as StockInItem[];
     }
 
+    async findByInvoiceId(invoiceId: string): Promise<StockInItem[]> {
+      const query = `
+        SELECT * FROM stock_in_items
+        WHERE invoice_stockin_id = $1
+        ORDER BY created_at DESC
+      `;
+      const result = await pool.query(query, [invoiceId]);
+      return result.rows as StockInItem[];
+    }
+    
+
     async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {
       const query = `
         SELECT 
@@ -66,6 +77,31 @@ export class StockInItemModel {
       const result = await pool.query(query);
       return result.rows;
     }
+
+    async updateStockInItem(
+      invoiceId: string,
+      itemId: string,
+      quantity: number,
+      unit_price: number,
+      expire_date: string
+    ): Promise<any> {
+      const query = `
+        UPDATE stock_in_items
+        SET 
+          quantity = $1,
+          unit_price = $2,
+          expire_date = $3,
+          updated_at = NOW()
+        WHERE id = $4 AND invoice_stockIn_id = $5
+        RETURNING *;
+      `;
+    
+      const values = [quantity, unit_price, expire_date, itemId, invoiceId];
+    
+      const result = await pool.query(query, values);
+      return result.rows[0];
+    }
+    
     
     
   }
