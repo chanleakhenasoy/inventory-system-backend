@@ -105,7 +105,7 @@ async findById(id: string): Promise<Product | null> {
     WHERE p.id = $1
     LIMIT 1
   `;
-  
+    
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 }
