@@ -12,6 +12,9 @@ export interface StockInItem {
   }
 
 export class StockInItemModel {
+  findStockInByInvoiceId(invoiceId: string) {
+    throw new Error("Method not implemented.");
+  }
   private StockInItem?: StockInItem;
 
   constructor(stockInItem?: StockInItem) {
@@ -49,15 +52,15 @@ export class StockInItemModel {
         return result.rows as StockInItem[];
     }
 
-    async findByInvoiceId(invoiceId: string): Promise<StockInItem[]> {
-      const query = `
-        SELECT * FROM stock_in_items
-        WHERE invoice_stockin_id = $1
-        ORDER BY created_at DESC
-      `;
-      const result = await pool.query(query, [invoiceId]);
-      return result.rows as StockInItem[];
-    }
+    // async findByInvoiceId(invoiceId: string): Promise<StockInItem[]> {
+    //   const query = `
+    //     SELECT * FROM stock_in_items
+    //     WHERE invoice_stockin_id = $1
+    //     ORDER BY created_at DESC
+    //   `;
+    //   const result = await pool.query(query, [invoiceId]);
+    //   return result.rows as StockInItem[];
+    // }
     
 
     async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {

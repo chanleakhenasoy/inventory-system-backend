@@ -76,34 +76,34 @@ export class StockInController {
     }
   }
 
-  async getStockInById(req: Request, res: Response) {
-    try {
-      const { invoice_id, item_id } = req.params; 
-      const stockInModel = new InvoiceStockInModel();
+  // async getStockInById(req: Request, res: Response) {
+  //   try {
+  //     const { invoice_id, item_id } = req.params; 
+  //     const stockInModel = new InvoiceStockInModel();
   
-      const stockIn = await stockInModel.findStockInInvoiceWithOneItem(invoice_id, item_id);
+  //     const stockIn = await stockInModel.findStockInInvoiceWithOneItem(invoice_id, item_id);
   
-      if (!stockIn) {
-         res.status(404).json({ message: "Stock-in record not found." });
-         return;
-      }
+  //     if (!stockIn) {
+  //        res.status(404).json({ message: "Stock-in record not found." });
+  //        return;
+  //     }
   
-        res.status(200).json({
-        message: "Get stock-in by id successfully",
-        data: stockIn,
-      });
-    } catch (error) {
-      console.error("Error fetching stock-in by id and item:", error);
-     res.status(500).json({ message: "Internal server error." });
-     return;
-    }
-  }
+  //       res.status(200).json({
+  //       message: "Get stock-in by id successfully",
+  //       data: stockIn,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching stock-in by id and item:", error);
+  //    res.status(500).json({ message: "Internal server error." });
+  //    return;
+  //   }
+  // }
 
-  async getItemByInvoiceId(req: Request, res: Response) {
+  async getStockInByInvoiceId(req: Request, res: Response) {
     const { invoiceId } = req.params;
     try {
-      const stockInModel = new StockInItemModel();
-      const total = await stockInModel.findByInvoiceId(invoiceId);
+      const stockInModel = new InvoiceStockInModel();
+      const total = await stockInModel.findStockInByInvoiceId(invoiceId);
       res
         .status(200)
         .json({ message: "Get items by invoice id successfully", data: total });
