@@ -83,8 +83,50 @@ export class InvoiceStockInModel {
     const result = await pool.query(query);
     return result.rows as InvoiceStockIn[];
   }
+  async findStockInInvoiceWithOneItem(invoiceId: string, itemId: string): Promise<any | null> {
+    const query = `
+      SELECT 
+        isi.id AS invoice_id,
+        isi.supplier_id,
+        isi.purchase_date,
+        isi.reference_number,
+        isi.due_date,
+        sii.id AS item_id,
+        sii.product_id,
+        sii.quantity,
+        sii.unit_price,
+        sii.expire_date
+      FROM invoice_stock_in isi
+      LEFT JOIN stock_in_items sii ON isi.id = sii.invoice_stockin_id
+      WHERE isi.id = $1 AND sii.id = $2;
+    `;
   
-
+    const result = await pool.query(query, [invoiceId, itemId]);
+  
+    if (result.rows.length === 0) return null;
+  
+    const row = result.rows[0];
+  
+    const response = {
+      invoice_id: row.invoice_id,
+      supplier_id: row.supplier_id,
+      purchase_date: row.purchase_date?.toISOString().slice(0, 10),
+      reference_number: row.reference_number,
+      due_date: row.due_date?.toISOString().slice(0, 10),
+      items: [
+        {
+          item_id: row.item_id,
+          product_id: row.product_id,
+          quantity: row.quantity,
+          unit_price: row.unit_price,
+          expire_date: row.expire_date?.toISOString().slice(0, 10),
+        }
+      ]
+    };
+  
+    return response;
+  }
+  
   async findOne(id: string): Promise<InvoiceStockIn | null> {
     const query = `
       SELECT * FROM stock_in
@@ -95,5 +137,4 @@ export class InvoiceStockInModel {
     return result.rows[0] || null;
   }
 
-  
 }
