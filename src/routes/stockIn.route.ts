@@ -14,5 +14,6 @@ router.get("/getAll-items", stockInController.getAllItems);
 router.put("/:itemId", stockInController.updateStockIn);
 router.get("/:itemId", stockInController.getItemById);
 router.get("/total", protectRoute([RoleEnum.ADMIN]), stockInController.getTotalStockIn);
+router.delete("/delete/:itemId", stockInController.deleteItem);
 
 export default router;
