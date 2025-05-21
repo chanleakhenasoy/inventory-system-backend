@@ -75,29 +75,36 @@ export class StockInController {
       return;
     }
   }
+  async getAllItems(req: Request, res: Response) {
+    try {
+      const stockInModel = new StockInItemModel();
+      const total = await stockInModel.findAll();
+      res
+        .status(200)
+        .json({ message: "Get all items successfully", data: total });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error." });
+      return;
+    }
+  }
+  async getItemById(req: Request, res: Response) {
+    const { itemId } = req.params;
+    try {
+      const stockInModel = new StockInItemModel();
+      const total = await stockInModel.findById(itemId);
+      res
+        .status(200)
+        .json({ message: "Get items by id successfully", data: total });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error." });
+      return;
+    }
+  }
 
-  // async getStockInById(req: Request, res: Response) {
-  //   try {
-  //     const { invoice_id, item_id } = req.params; 
-  //     const stockInModel = new InvoiceStockInModel();
-  
-  //     const stockIn = await stockInModel.findStockInInvoiceWithOneItem(invoice_id, item_id);
-  
-  //     if (!stockIn) {
-  //        res.status(404).json({ message: "Stock-in record not found." });
-  //        return;
-  //     }
-  
-  //       res.status(200).json({
-  //       message: "Get stock-in by id successfully",
-  //       data: stockIn,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error fetching stock-in by id and item:", error);
-  //    res.status(500).json({ message: "Internal server error." });
-  //    return;
-  //   }
-  // }
+
+
 
   async getStockInByInvoiceId(req: Request, res: Response) {
     const { invoiceId } = req.params;
@@ -106,7 +113,7 @@ export class StockInController {
       const total = await stockInModel.findStockInByInvoiceId(invoiceId);
       res
         .status(200)
-        .json({ message: "Get items by invoice id successfully", data: total });
+        .json({ message: "Get invoice id successfully", data: total });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error." });
@@ -127,34 +134,61 @@ export class StockInController {
       return;
     }
   }
-
-  async updateItems(req: Request, res: Response) {
-    const { invoiceId, itemId } = req.params;
-    const { quantity, unit_price, expire_date } = req.body;
+  async updateStockIn(req: Request, res: Response) {
+    const { itemId } = req.params;
+    const {
+      purchase_date,
+      due_date,
+      supplier_id,      // new: update supplier_id in invoice
+      quantity,
+      unit_price,
+      expire_date,
+      reference_number,
+      product_id        // new: update product_id in item
+    } = req.body;
   
     try {
       const stockInModel = new StockInItemModel();
   
-      const updatedItem = await stockInModel.updateStockInItem(
-        invoiceId,
-        itemId,
-        quantity,
-        unit_price,
-        expire_date
-      );
-  
-      if (!updatedItem) {
-        res.status(404).json({ message: "Item not found or does not belong to invoice" });
+      // Find item to get invoiceId
+      const item = await stockInModel.findById(itemId);
+      if (!item) {
+        res.status(404).json({ message: "Item not found" });
         return;
       }
   
-      res.status(200).json({ message: "Item updated successfully", data: updatedItem });
+      const invoiceId = item.invoice_stockin_id;
+  
+      // Prepare invoice update object, only include supplier_id if present
+      const invoiceUpdate = {
+        purchase_date,
+        due_date,
+        reference_number,
+        ...(supplier_id && { supplier_id }),
+      };
+  
+      // Prepare item update object, only include product_id if present
+      const itemUpdate = {
+        quantity,
+        unit_price,
+        expire_date,
+        ...(product_id && { product_id }),
+      };
+  
+      // Update invoice and item in transaction
+      const updatedData = await stockInModel.updateInvoiceAndItem(
+        invoiceId,
+        itemId,
+        invoiceUpdate,
+        itemUpdate
+      );
+  
+      res.status(200).json({ message: "Updated successfully", data: updatedData });
+      return;
     } catch (error) {
-      console.error("Update error:", error);
+      console.error(error);
       res.status(500).json({ message: "Internal server error" });
+      return;
     }
   }
-  
-  
-  
-}
+}  

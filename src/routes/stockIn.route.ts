@@ -9,10 +9,10 @@ const stockInController = new StockInController();
 // Routes for stock-in and stock-in-items
 router.post("/create/:supplier_id", protectRoute([RoleEnum.ADMIN]), stockInController.createStockIn);
 router.get("/getAll", stockInController.getAllStockIn);
-router.get("/:invoiceId", stockInController.getStockInByInvoiceId);
-// router.get("/:invoiceId/:itemId", stockInController.getStockInById);
-router.put("/:invoiceId/:itemId", stockInController.updateItems);
+router.get("/:invoiceId", stockInController.getStockInByInvoiceId)
+router.get("/getAll-items", stockInController.getAllItems);
+router.put("/:itemId", stockInController.updateStockIn);
+router.get("/:itemId", stockInController.getItemById);
 router.get("/total", protectRoute([RoleEnum.ADMIN]), stockInController.getTotalStockIn);
-
 
 export default router;
