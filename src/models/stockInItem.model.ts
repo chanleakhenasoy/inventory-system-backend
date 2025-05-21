@@ -121,123 +121,135 @@ export class StockInItemModel {
   }
 
   async updateInvoiceAndItem(
-    invoiceId: string,
-    itemId: string,
-    invoiceUpdate: {
-      purchase_date: string;
-      due_date: string;
-      reference_number: string;
-      supplier_id?: string;
-    },
-    itemUpdate: {
-      quantity: number;
-      unit_price: number;
-      expire_date: string;
-      product_id?: string;
-    }
-  ): Promise<{ invoice: StockInItem; item: StockInItem }> {
-    const client = await pool.connect();
-  
-    try {
-      await client.query('BEGIN');
-  
-      // Get current supplier_id if not provided
-      let supplierId = invoiceUpdate.supplier_id;
-      if (!supplierId) {
-        const supplierRes = await client.query(
-          'SELECT supplier_id FROM invoice_stock_in WHERE id = $1',
-          [invoiceId]
-        );
-        if (supplierRes.rowCount === 0) {
-          throw { status: 404, message: 'Invoice not found' };
-        }
-        supplierId = supplierRes.rows[0].supplier_id;
-      }
-  
-      // Update invoice
-      const updatedInvoiceRes = await client.query(
-        `
-          UPDATE invoice_stock_in
-          SET purchase_date = $1,
-              due_date = $2,
-              supplier_id = $3,
-              reference_number = $4,
-              updated_at = NOW()
-          WHERE id = $5
-          RETURNING *;
-        `,
-        [
-          invoiceUpdate.purchase_date,
-          invoiceUpdate.due_date,
-          supplierId,
-          invoiceUpdate.reference_number,
-          invoiceId,
-        ]
-      );
-  
-      if (updatedInvoiceRes.rowCount === 0) {
-        throw { status: 404, message: 'Invoice not found or update failed' };
-      }
-  
-      // Get current product_id if not provided
-      let productId = itemUpdate.product_id;
-      if (!productId) {
-        const productRes = await client.query(
-          `
-            SELECT product_id FROM stock_in_items
-            WHERE id = $1 AND invoice_stockin_id = $2
-          `,
-          [itemId, invoiceId]
-        );
-        if (productRes.rowCount === 0) {
-          throw { status: 404, message: 'Item not found for the given invoice' };
-        }
-        productId = productRes.rows[0].product_id;
-      }
-  
-      // Update item
-      const updatedItemRes = await client.query(
-        `
-          UPDATE stock_in_items
-          SET quantity = $1,
-              unit_price = $2,
-              expire_date = $3,
-              product_id = $4,
-              updated_at = NOW()
-          WHERE id = $5 AND invoice_stockin_id = $6
-          RETURNING *;
-        `,
-        [
-          itemUpdate.quantity,
-          itemUpdate.unit_price,
-          itemUpdate.expire_date,
-          productId,
-          itemId,
-          invoiceId,
-        ]
-      );
-  
-      if (updatedItemRes.rowCount === 0) {
-        throw { status: 404, message: 'Item not found or update failed' };
-      }
-  
-      await client.query('COMMIT');
-  
-      // Optional: load full joined data
-      const invoice = await this.findStockInByInvoiceId(invoiceId);
-      const item = await this.findById(itemId);
-  
-      return {
-        invoice: invoice[0] || updatedInvoiceRes.rows[0],
-        item: item || updatedItemRes.rows[0],
-      };
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
+  invoiceId: string,
+  itemId: string,
+  invoiceUpdate: {
+    purchase_date: string;
+    due_date: string;
+    reference_number: string;
+    supplier_id?: string;
+  },
+  itemUpdate: {
+    quantity: number;
+    unit_price: number;
+    expire_date: string;
+    product_id?: string;
   }
+): Promise<{ invoice: StockInItem; item: StockInItem }> {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // ✅ Validate required fields
+    if (!invoiceUpdate.purchase_date) {
+      throw { status: 400, message: 'purchase_date is required' };
+    }
+    if (!invoiceUpdate.due_date) {
+      throw { status: 400, message: 'due_date is required' };
+    }
+    if (!invoiceUpdate.reference_number) {
+      throw { status: 400, message: 'reference_number is required' };
+    }
+
+    // ✅ Get current supplier_id if not provided
+    let supplierId = invoiceUpdate.supplier_id;
+    if (!supplierId) {
+      const supplierRes = await client.query(
+        'SELECT supplier_id FROM invoice_stock_in WHERE id = $1',
+        [invoiceId]
+      );
+      if (supplierRes.rowCount === 0) {
+        throw { status: 404, message: 'Invoice not found' };
+      }
+      supplierId = supplierRes.rows[0].supplier_id;
+    }
+
+    // ✅ Update invoice
+    const updatedInvoiceRes = await client.query(
+      `
+        UPDATE invoice_stock_in
+        SET purchase_date = $1,
+            due_date = $2,
+            supplier_id = $3,
+            reference_number = $4,
+            updated_at = NOW()
+        WHERE id = $5
+        RETURNING *;
+      `,
+      [
+        invoiceUpdate.purchase_date,
+        invoiceUpdate.due_date,
+        supplierId,
+        invoiceUpdate.reference_number,
+        invoiceId,
+      ]
+    );
+
+    if (updatedInvoiceRes.rowCount === 0) {
+      throw { status: 404, message: 'Invoice not found or update failed' };
+    }
+
+    // ✅ Get current product_id if not provided
+    let productId = itemUpdate.product_id;
+    if (!productId) {
+      const productRes = await client.query(
+        `
+          SELECT product_id FROM stock_in_items
+          WHERE id = $1 AND invoice_stockin_id = $2
+        `,
+        [itemId, invoiceId]
+      );
+      if (productRes.rowCount === 0) {
+        throw { status: 404, message: 'Item not found for the given invoice' };
+      }
+      productId = productRes.rows[0].product_id;
+    }
+
+    // ✅ Update item
+    const updatedItemRes = await client.query(
+      `
+        UPDATE stock_in_items
+        SET quantity = $1,
+            unit_price = $2,
+            expire_date = $3,
+            product_id = $4,
+            updated_at = NOW()
+        WHERE id = $5 AND invoice_stockin_id = $6
+        RETURNING *;
+      `,
+      [
+        itemUpdate.quantity,
+        itemUpdate.unit_price,
+        itemUpdate.expire_date,
+        productId,
+        itemId,
+        invoiceId,
+      ]
+    );
+
+    if (updatedItemRes.rowCount === 0) {
+      throw { status: 404, message: 'Item not found or update failed' };
+    }
+
+    await client.query('COMMIT');
+
+    // ✅ Optional: load full joined data
+    const invoice = await this.findStockInByInvoiceId(invoiceId);
+    const item = await this.findById(itemId);
+
+    return {
+      invoice: invoice[0] || updatedInvoiceRes.rows[0],
+      item: item || updatedItemRes.rows[0],
+    };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
   
   // Count total quantity of products in stock
   async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {
@@ -257,6 +269,18 @@ export class StockInItemModel {
     const result = await pool.query(query);
     return result.rows;
   }
+
+async deleteItemById(itemId: string): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("DELETE FROM stock_in_items WHERE id = $1", [itemId]);
+  } finally {
+    client.release();
+  }
 }
+
+  
+}
+
 
 export default StockInItemModel;

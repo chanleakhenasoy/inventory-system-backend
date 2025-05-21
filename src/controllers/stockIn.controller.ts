@@ -120,6 +120,8 @@ export class StockInController {
       return;
     }
   }
+
+  
   
   async getTotalStockIn(req: Request, res: Response) {
     try {
@@ -135,60 +137,91 @@ export class StockInController {
     }
   }
   async updateStockIn(req: Request, res: Response) {
-    const { itemId } = req.params;
-    const {
+  const { itemId } = req.params;
+  const {
+    purchase_date,
+    due_date,
+    supplier_id,      
+    quantity,
+    unit_price,
+    expire_date,
+    reference_number,
+    product_id        
+  } = req.body;
+
+  try {
+    // ✅ Validate required fields before proceeding
+    if (!purchase_date || !due_date || !reference_number) {
+      res.status(400).json({
+        
+        message: "purchase_date, due_date, and reference_number are required",
+      });
+      return;
+    }
+
+    const stockInModel = new StockInItemModel();
+
+    // ✅ Check if item exists and get invoiceId
+    const item = await stockInModel.findById(itemId);
+    if (!item) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+
+    const invoiceId = item.invoice_stockin_id;
+
+    // ✅ Prepare update objects
+    const invoiceUpdate = {
       purchase_date,
       due_date,
-      supplier_id,      // new: update supplier_id in invoice
+      reference_number,
+      ...(supplier_id && { supplier_id }),
+    };
+
+    const itemUpdate = {
       quantity,
       unit_price,
       expire_date,
-      reference_number,
-      product_id        // new: update product_id in item
-    } = req.body;
-  
-    try {
-      const stockInModel = new StockInItemModel();
-  
-      // Find item to get invoiceId
-      const item = await stockInModel.findById(itemId);
-      if (!item) {
-        res.status(404).json({ message: "Item not found" });
-        return;
-      }
-  
-      const invoiceId = item.invoice_stockin_id;
-  
-      // Prepare invoice update object, only include supplier_id if present
-      const invoiceUpdate = {
-        purchase_date,
-        due_date,
-        reference_number,
-        ...(supplier_id && { supplier_id }),
-      };
-  
-      // Prepare item update object, only include product_id if present
-      const itemUpdate = {
-        quantity,
-        unit_price,
-        expire_date,
-        ...(product_id && { product_id }),
-      };
-  
-      // Update invoice and item in transaction
-      const updatedData = await stockInModel.updateInvoiceAndItem(
-        invoiceId,
-        itemId,
-        invoiceUpdate,
-        itemUpdate
-      );
-  
-      res.status(200).json({ message: "Updated successfully", data: updatedData });
-      return;
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
-      return;
-    }
+      ...(product_id && { product_id }),
+    };
+
+    // ✅ Perform update in transaction
+    const updatedData = await stockInModel.updateInvoiceAndItem(
+      invoiceId,
+      itemId,
+      invoiceUpdate,
+      itemUpdate
+    );
+
+     res.status(200).json({ message: "Updated successfully", data: updatedData });
+     return;
+  } catch (error) {
+    console.error("Update failed:", error);
+     res.status(500).json({ message: "Internal server error" });
+     return;
   }
-}  
+}
+
+async deleteItem(req: Request, res: Response) {
+  const { itemId } = req.params;
+
+  try {
+    const stockInModel = new StockInItemModel();
+    const item = await stockInModel.findById(itemId);
+
+    if (!item) {
+       res.status(404).json({ message: "Item not found" });
+       return;
+    }
+
+    await stockInModel.deleteItemById(itemId);
+
+    res.status(200).json({ message: "Item deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete item" });
+  }
+}
+
+}
+
