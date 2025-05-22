@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { pool } from "../config/db";
 
 export class StockInController {
+  stockInItemModel: any;
   async createStockIn(req: Request, res: Response) {
     try {
       const { purchase_date, reference_number, due_date, items } = req.body;
@@ -44,6 +45,7 @@ export class StockInController {
             expire_date: item.expire_date,
             created_at: new Date(),
             updated_at: new Date(),
+            total_price:item.total_price,
           });
   
           return await stockInItemModel.create(); // Store in database
@@ -121,8 +123,6 @@ export class StockInController {
     }
   }
 
-  
-  
   async getTotalStockIn(req: Request, res: Response) {
     try {
       const stockInModel = new StockInItemModel();
@@ -150,7 +150,7 @@ export class StockInController {
   } = req.body;
 
   try {
-    // ✅ Validate required fields before proceeding
+    
     if (!purchase_date || !due_date || !reference_number) {
       res.status(400).json({
         
@@ -161,7 +161,6 @@ export class StockInController {
 
     const stockInModel = new StockInItemModel();
 
-    // ✅ Check if item exists and get invoiceId
     const item = await stockInModel.findById(itemId);
     if (!item) {
       res.status(404).json({ message: "Item not found" });
@@ -170,7 +169,7 @@ export class StockInController {
 
     const invoiceId = item.invoice_stockin_id;
 
-    // ✅ Prepare update objects
+   
     const invoiceUpdate = {
       purchase_date,
       due_date,
@@ -185,7 +184,7 @@ export class StockInController {
       ...(product_id && { product_id }),
     };
 
-    // ✅ Perform update in transaction
+
     const updatedData = await stockInModel.updateInvoiceAndItem(
       invoiceId,
       itemId,
@@ -220,6 +219,21 @@ async deleteItem(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to delete item" });
+  }
+}
+
+
+async getTotalQuantityInhand(req: Request, res: Response) {
+  try {
+    const stockInModel = new StockInItemModel();
+    const total = await stockInModel.getTotalQuantityInhand();
+    res
+      .status(200)
+      .json({ message: "Get stock in all successfully", data: total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+    return;
   }
 }
 

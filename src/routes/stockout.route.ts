@@ -7,7 +7,7 @@ import protectRoute from "../midleware/auth.middleware";
 const router = Router();
 
 router.post("/create/:product_id/:user_id",validateStockout,protectRoute([RoleEnum.ADMIN]), createStockout);
-router.get("/total" ,protectRoute([RoleEnum.ADMIN]),getTotalStockOut);
+router.get("/item/total" ,protectRoute([RoleEnum.ADMIN]),getTotalStockOut);
 router.get("/getAll",protectRoute([RoleEnum.ADMIN]),getAllStockouts,)
 
 export default router;

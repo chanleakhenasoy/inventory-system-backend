@@ -67,5 +67,7 @@ CREATE TABLE stock_in_items(
 ALTER TABLE products 
 ADD COLUMN minimum_stock NUMERIC;
 
+ALTER TABLE stock_in_items
+ADD COLUMN total_price NUMERIC;
 
 

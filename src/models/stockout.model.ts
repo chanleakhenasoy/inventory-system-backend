@@ -61,13 +61,22 @@ async findAll(): Promise<StockOut[]> {
   return result.rows;
 }
 
+async countStockoutItem(): Promise<{ name_en: string; total_quantity: number }[]> {
+  const query = `
+    SELECT 
+      p.name_en, 
+      COALESCE(SUM(sto.quantity), 0) AS total_quantity
+    FROM 
+      products p
+    LEFT JOIN 
+      stock_out sto ON p.id = sto.product_id
+    GROUP BY 
+      p.name_en
+    ORDER BY 
+      p.name_en;
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+}
 
-
-
-
-async countTotalProducts(): Promise<number> {
-    const query = `SELECT COUNT(*) FROM stock_out`;
-    const result = await pool.query(query);
-    return parseInt(result.rows[0].count, 10);
-  }
 }
