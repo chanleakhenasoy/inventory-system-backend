@@ -1,6 +1,4 @@
 import { pool } from "../config/db";
-
-// Extended interface to include all fields returned by queries
 export interface StockInItem {
   id: string;
   invoice_stockin_id: string;
@@ -10,17 +8,19 @@ export interface StockInItem {
   expire_date: Date;
   created_at: Date;
   updated_at: Date;
-  reference_number?: string; // Optional fields from invoice_stock_in
+  reference_number?: string; 
   purchase_date?: Date;
   due_date?: Date;
   supplier_id?: string;
   supplier_name?: string;
-  name_en?: string; // Product name
-  name_kh?: string; // Khmer name
+  name_en?: string; 
+  name_kh?: string; 
+  total_price: number;
 }
 
 export class StockInItemModel {
   private stockInItem?: StockInItem;
+  
 
   constructor(stockInItem?: StockInItem) {
     this.stockInItem = stockInItem;
@@ -33,8 +33,8 @@ export class StockInItemModel {
     }
 
     const query = `
-      INSERT INTO stock_in_items (id, invoice_stockin_id, product_id, quantity, unit_price, expire_date, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO stock_in_items (id, invoice_stockin_id, product_id, quantity, unit_price, expire_date, created_at, updated_at, total_price)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
     const values = [
@@ -46,6 +46,8 @@ export class StockInItemModel {
       this.stockInItem.expire_date,
       this.stockInItem.created_at || new Date(),
       this.stockInItem.updated_at || new Date(),
+      this.stockInItem.total_price
+
     ];
 
     const result = await pool.query(query, values);
@@ -57,6 +59,7 @@ export class StockInItemModel {
     const query = `
       SELECT 
         sii.*, 
+        (sii.quantity * sii.unit_price) AS total_price,
         i.reference_number, 
         i.purchase_date, 
         i.due_date, 
@@ -132,6 +135,7 @@ export class StockInItemModel {
   itemUpdate: {
     quantity: number;
     unit_price: number;
+    total_price: number;
     expire_date: string;
     product_id?: string;
   }
@@ -141,7 +145,7 @@ export class StockInItemModel {
   try {
     await client.query('BEGIN');
 
-    // ✅ Validate required fields
+    
     if (!invoiceUpdate.purchase_date) {
       throw { status: 400, message: 'purchase_date is required' };
     }
@@ -152,7 +156,7 @@ export class StockInItemModel {
       throw { status: 400, message: 'reference_number is required' };
     }
 
-    // ✅ Get current supplier_id if not provided
+   
     let supplierId = invoiceUpdate.supplier_id;
     if (!supplierId) {
       const supplierRes = await client.query(
@@ -165,7 +169,7 @@ export class StockInItemModel {
       supplierId = supplierRes.rows[0].supplier_id;
     }
 
-    // ✅ Update invoice
+   
     const updatedInvoiceRes = await client.query(
       `
         UPDATE invoice_stock_in
@@ -190,7 +194,7 @@ export class StockInItemModel {
       throw { status: 404, message: 'Invoice not found or update failed' };
     }
 
-    // ✅ Get current product_id if not provided
+   
     let productId = itemUpdate.product_id;
     if (!productId) {
       const productRes = await client.query(
@@ -206,12 +210,13 @@ export class StockInItemModel {
       productId = productRes.rows[0].product_id;
     }
 
-    // ✅ Update item
+    
     const updatedItemRes = await client.query(
       `
         UPDATE stock_in_items
         SET quantity = $1,
             unit_price = $2,
+            total_price = CAST($1 AS numeric) * CAST($2 AS numeric),
             expire_date = $3,
             product_id = $4,
             updated_at = NOW()
@@ -221,6 +226,7 @@ export class StockInItemModel {
       [
         itemUpdate.quantity,
         itemUpdate.unit_price,
+        itemUpdate.total_price,
         itemUpdate.expire_date,
         productId,
         itemId,
@@ -234,7 +240,7 @@ export class StockInItemModel {
 
     await client.query('COMMIT');
 
-    // ✅ Optional: load full joined data
+    
     const invoice = await this.findStockInByInvoiceId(invoiceId);
     const item = await this.findById(itemId);
 
@@ -251,7 +257,6 @@ export class StockInItemModel {
 }
 
   
-  // Count total quantity of products in stock
   async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {
     const query = `
       SELECT 
@@ -278,6 +283,48 @@ async deleteItemById(itemId: string): Promise<void> {
     client.release();
   }
 }
+
+
+async getTotalQuantityInhand(): Promise<{
+  id: string;
+  name_en: string;
+  name_kh: string;
+  beginning_quantity: number;
+  total_stockin: number;
+  total_stockout: number;
+  quantity_in_hand: number;
+  minimum_stock: number;
+}[]> {
+  const query = `
+    SELECT 
+      p.id,
+      p.name_en,
+      p.name_kh,
+      p.beginning_quantity,
+      COALESCE(s.total_stockin, 0) AS total_stockin,
+      COALESCE(o.total_stockout, 0) AS total_stockout,
+      (p.beginning_quantity + COALESCE(s.total_stockin, 0) - COALESCE(o.total_stockout, 0)) AS quantity_in_hand,
+      p.minimum_stock
+    FROM 
+      products p
+    LEFT JOIN (
+      SELECT product_id, SUM(quantity) AS total_stockin
+      FROM stock_in_items
+      GROUP BY product_id
+    ) s ON p.id = s.product_id
+    LEFT JOIN (
+      SELECT product_id, SUM(quantity) AS total_stockout
+      FROM stock_out
+      GROUP BY product_id
+    ) o ON p.id = o.product_id
+    ORDER BY 
+      p.name_en;
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+}
+
+
 
   
 }

@@ -6,14 +6,14 @@ import { RoleEnum } from "../utils/enum";
 const router = Router();
 const stockInController = new StockInController();
 
-// Routes for stock-in and stock-in-items
 router.post("/create/:supplier_id", protectRoute([RoleEnum.ADMIN]), stockInController.createStockIn);
+router.get('/quantity-in-hand', stockInController.getTotalQuantityInhand);
+router.get("/item/total", protectRoute([RoleEnum.ADMIN]), stockInController.getTotalStockIn);
 router.get("/getAll", stockInController.getAllStockIn);
 router.get("/:invoiceId", stockInController.getStockInByInvoiceId)
-router.get("/getAll-items", stockInController.getAllItems);
+router.get("/getAll/items", stockInController.getAllItems);
 router.put("/:itemId", stockInController.updateStockIn);
 router.get("/:itemId", stockInController.getItemById);
-router.get("/total", protectRoute([RoleEnum.ADMIN]), stockInController.getTotalStockIn);
 router.delete("/delete/:itemId", stockInController.deleteItem);
 
 export default router;

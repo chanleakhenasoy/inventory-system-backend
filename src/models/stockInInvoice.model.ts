@@ -65,6 +65,7 @@ export class InvoiceStockInModel {
             'product_id', sii.product_id,
             'quantity', sii.quantity,
             'unit_price', sii.unit_price,
+            'total_price', sii.quantity * sii.unit_price,
             'expire_date', sii.expire_date,
             'created_at', sii.created_at,
             'updated_at', sii.updated_at,
@@ -96,6 +97,7 @@ export class InvoiceStockInModel {
         sii.product_id,
         sii.quantity,
         sii.unit_price,
+        sii.total_price,
         sii.expire_date
       FROM invoice_stock_in AS isi
       LEFT JOIN stock_in_items AS sii ON isi.id = sii.invoice_stockin_id
@@ -121,6 +123,7 @@ export class InvoiceStockInModel {
           product_id: row.product_id,
           quantity: row.quantity,
           unit_price: row.unit_price,
+          total_price: row.total_price,
           expire_date: row.expire_date?.toISOString().slice(0, 10),
         }))
     };
