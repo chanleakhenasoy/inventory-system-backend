@@ -122,22 +122,23 @@ export class StockInItemModel {
     const result = await pool.query(query, [invoiceId]);
     return result.rows as StockInItem[];
   }
-
-  async updateInvoiceAndItem(
+async updateInvoiceAndItem(
   invoiceId: string,
   itemId: string,
-  invoiceUpdate: {
-    purchase_date: string;
-    due_date: string;
-    reference_number: string;
-    supplier_id?: string;
-  },
-  itemUpdate: {
-    quantity: number;
-    unit_price: number;
-    total_price: number;
-    expire_date: string;
-    product_id?: string;
+  updateData: {
+    invoiceUpdate: {
+      purchase_date: string;
+      due_date: string;
+      reference_number: string;
+      supplier_id?: string;
+    };
+    itemUpdate: {
+      product_id?: string;
+      quantity: number;
+      unit_price: number;
+      total_price: number;
+      expire_date: string;
+    };
   }
 ): Promise<{ invoice: StockInItem; item: StockInItem }> {
   const client = await pool.connect();
@@ -145,7 +146,14 @@ export class StockInItemModel {
   try {
     await client.query('BEGIN');
 
-    
+    // Validate updateData
+    if (!updateData || !updateData.invoiceUpdate || !updateData.itemUpdate) {
+      throw { status: 400, message: 'invoiceUpdate and itemUpdate are required' };
+    }
+
+    const { invoiceUpdate, itemUpdate } = updateData;
+
+    // Validate invoice update fields
     if (!invoiceUpdate.purchase_date) {
       throw { status: 400, message: 'purchase_date is required' };
     }
@@ -156,7 +164,7 @@ export class StockInItemModel {
       throw { status: 400, message: 'reference_number is required' };
     }
 
-   
+    // Get supplier_id if not provided
     let supplierId = invoiceUpdate.supplier_id;
     if (!supplierId) {
       const supplierRes = await client.query(
@@ -169,7 +177,7 @@ export class StockInItemModel {
       supplierId = supplierRes.rows[0].supplier_id;
     }
 
-   
+    // Update invoice_stock_in
     const updatedInvoiceRes = await client.query(
       `
         UPDATE invoice_stock_in
@@ -194,7 +202,7 @@ export class StockInItemModel {
       throw { status: 404, message: 'Invoice not found or update failed' };
     }
 
-   
+    // Get product_id if not provided
     let productId = itemUpdate.product_id;
     if (!productId) {
       const productRes = await client.query(
@@ -210,24 +218,58 @@ export class StockInItemModel {
       productId = productRes.rows[0].product_id;
     }
 
-    
+    // Ensure type consistency
+    const quantity = Math.floor(Number(itemUpdate.quantity || 0)); // Cast to integer
+    const unit_price = Number(Number(itemUpdate.unit_price || 0).toFixed(2)); // Numeric with 2 decimals
+    const total_price = Number(Number(itemUpdate.total_price || quantity * unit_price).toFixed(2)); // Numeric with 2 decimals
+
+    // Validate and handle expire_date
+    console.log('Received expire_date:', itemUpdate.expire_date);
+    let expire_date = itemUpdate.expire_date;
+    if (!expire_date) {
+      // Fetch existing expire_date as fallback
+      const existingItemRes = await client.query(
+        'SELECT expire_date FROM stock_in_items WHERE id = $1 AND invoice_stockin_id = $2',
+        [itemId, invoiceId]
+      );
+      if (existingItemRes.rowCount === 0) {
+        throw { status: 404, message: 'Item not found for expire_date fallback' };
+      }
+      expire_date = existingItemRes.rows[0].expire_date;
+      if (!expire_date) {
+        // Use default date (one year from today) if no existing expire_date
+        expire_date = new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+          .toISOString()
+          .split('T')[0];
+      }
+    }
+
+    // Validate item update fields
+    if (quantity < 0 || unit_price < 0) {
+      throw { status: 400, message: 'Quantity and unit price must be non-negative' };
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(expire_date)) {
+      throw { status: 400, message: 'expire_date must be a valid date in YYYY-MM-DD format' };
+    }
+
+    // Update stock_in_items
     const updatedItemRes = await client.query(
       `
         UPDATE stock_in_items
         SET quantity = $1,
             unit_price = $2,
-            total_price = CAST($1 AS numeric) * CAST($2 AS numeric),
-            expire_date = $3,
-            product_id = $4,
+            total_price = $3,
+            expire_date = $4,
+            product_id = $5,
             updated_at = NOW()
-        WHERE id = $5 AND invoice_stockin_id = $6
+        WHERE id = $6 AND invoice_stockin_id = $7
         RETURNING *;
       `,
       [
-        itemUpdate.quantity,
-        itemUpdate.unit_price,
-        itemUpdate.total_price,
-        itemUpdate.expire_date,
+        quantity,
+        unit_price,
+        total_price,
+        expire_date,
         productId,
         itemId,
         invoiceId,
@@ -240,7 +282,7 @@ export class StockInItemModel {
 
     await client.query('COMMIT');
 
-    
+    // Fetch updated invoice and item
     const invoice = await this.findStockInByInvoiceId(invoiceId);
     const item = await this.findById(itemId);
 
@@ -250,12 +292,12 @@ export class StockInItemModel {
     };
   } catch (err) {
     await client.query('ROLLBACK');
+    console.error('Update error:', err);
     throw err;
   } finally {
     client.release();
   }
 }
-
   
   async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {
     const query = `
