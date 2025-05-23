@@ -78,7 +78,7 @@ export class StockInItemModel {
   }
 
   // Find a stock-in item by ID with joined data
-  async findById(id: string): Promise<StockInItem | null> {
+  async findById(invoiceId: string, itemId: string): Promise<StockInItem | null> {
     const query = `
       SELECT 
         sii.*, 
@@ -93,12 +93,13 @@ export class StockInItemModel {
       JOIN invoice_stock_in AS i ON sii.invoice_stockin_id = i.id
       JOIN suppliers AS s ON i.supplier_id = s.id
       JOIN products AS p ON sii.product_id = p.id
-      WHERE sii.id = $1
+      WHERE sii.id = $1 AND sii.invoice_stockin_id = $2
       ORDER BY sii.created_at DESC
     `;
-    const result = await pool.query(query, [id]);
+    const result = await pool.query(query, [itemId, invoiceId]);
     return result.rows[0] || null;
   }
+  
 
   // Find stock-in items by invoice ID with joined data
   async findStockInByInvoiceId(invoiceId: string): Promise<StockInItem[]> {
@@ -122,32 +123,33 @@ export class StockInItemModel {
     const result = await pool.query(query, [invoiceId]);
     return result.rows as StockInItem[];
   }
-async updateInvoiceAndItem(
-  invoiceId: string,
-  itemId: string,
-  updateData: {
-    invoiceUpdate: {
-      purchase_date: string;
-      due_date: string;
-      reference_number: string;
-      supplier_id?: string;
-    };
-    itemUpdate: {
-      product_id?: string;
-      quantity: number;
-      unit_price: number;
-      total_price: number;
-      expire_date: string;
-    };
-  }
-): Promise<{ invoice: StockInItem; item: StockInItem }> {
-  const client = await pool.connect();
 
+
+  async updateInvoiceAndItem(
+    invoiceId: string,
+    itemId: string,
+    updateData: {
+      invoiceUpdate: {
+        purchase_date: string;
+        due_date: string;
+        reference_number: string;
+        supplier_id?: string;
+      };
+      itemUpdate: {
+        product_id?: string;
+        quantity: number;
+        unit_price: number;
+        total_price: number;
+        expire_date: string;
+      };
+    }
+  ): Promise<{ invoice: StockInItem; item: StockInItem }> {
+    const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     // Validate updateData
-    if (!updateData || !updateData.invoiceUpdate || !updateData.itemUpdate) {
+    if (!updateData.invoiceUpdate || !updateData.itemUpdate) {
       throw { status: 400, message: 'invoiceUpdate and itemUpdate are required' };
     }
 
@@ -284,7 +286,7 @@ async updateInvoiceAndItem(
 
     // Fetch updated invoice and item
     const invoice = await this.findStockInByInvoiceId(invoiceId);
-    const item = await this.findById(itemId);
+    const item = await this.findById(invoiceId,itemId);
 
     return {
       invoice: invoice[0] || updatedInvoiceRes.rows[0],
@@ -317,14 +319,35 @@ async updateInvoiceAndItem(
     return result.rows;
   }
 
-async deleteItemById(itemId: string): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query("DELETE FROM stock_in_items WHERE id = $1", [itemId]);
-  } finally {
-    client.release();
+  async deleteItemById(invoiceId: string, itemId: string): Promise<void> {
+    const client = await pool.connect();
+  
+    try {
+      await client.query('BEGIN');
+  
+      const res = await client.query(
+        `
+          DELETE FROM stock_in_items
+          WHERE invoice_stockin_id = $1 AND id = $2
+          RETURNING *;
+        `,
+        [invoiceId, itemId]
+      );
+  
+      if (res.rowCount === 0) {
+        throw { status: 404, message: "Item not found or does not belong to the invoice" };
+      }
+  
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error("Delete failed:", error);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
-}
+  
 
 
 async getTotalQuantityInhand(): Promise<{
@@ -365,11 +388,33 @@ async getTotalQuantityInhand(): Promise<{
   const result = await pool.query(query);
   return result.rows;
 }
+ 
 
 
+async getTotalUnitAvgCost(): Promise<{
+  id: string;
+  product_id: string;
+  total_price: number;
+  unit_price: number;
+  calculated_quantity: number;
+}[]> {
+  const query = `
+    SELECT 
+      id,
+      product_id,
+      total_price,
+      unit_price,
+      ROUND(total_price / NULLIF(unit_price, 0), 2) AS calculated_quantity
+    FROM 
+      stock_in_items
+    WHERE 
+      total_price IS NOT NULL AND unit_price IS NOT NULL
+    ORDER BY 
+      created_at DESC;
+  `;
 
-  
+  const result = await pool.query(query);
+  return result.rows;
 }
-
-
+}
 export default StockInItemModel;

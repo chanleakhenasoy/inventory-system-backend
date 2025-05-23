@@ -91,10 +91,10 @@ export class StockInController {
     }
   }
   async getItemById(req: Request, res: Response) {
-    const { itemId } = req.params;
+    const { invoiceId,itemId } = req.params;
     try {
       const stockInModel = new StockInItemModel();
-      const total = await stockInModel.findById(itemId);
+      const total = await stockInModel.findById(invoiceId,itemId);
       res
         .status(200)
         .json({ message: "Get items by id successfully", data: total });
@@ -137,39 +137,28 @@ export class StockInController {
     }
   }
   async updateStockIn(req: Request, res: Response) {
-  const { itemId } = req.params;
+  const { invoiceId, itemId } = req.params;
   const {
     purchase_date,
     due_date,
-    supplier_id,      
+    supplier_id,
     quantity,
     unit_price,
+    total_price,
     expire_date,
     reference_number,
-    product_id        
+    product_id
   } = req.body;
 
   try {
-    
-    if (!purchase_date || !due_date || !reference_number) {
-      res.status(400).json({
-        
-        message: "purchase_date, due_date, and reference_number are required",
-      });
-      return;
-    }
-
     const stockInModel = new StockInItemModel();
 
-    const item = await stockInModel.findById(itemId);
+    const item = await stockInModel.findById(invoiceId, itemId);
     if (!item) {
       res.status(404).json({ message: "Item not found" });
       return;
     }
 
-    const invoiceId = item.invoice_stockin_id;
-
-   
     const invoiceUpdate = {
       purchase_date,
       due_date,
@@ -180,40 +169,31 @@ export class StockInController {
     const itemUpdate = {
       quantity,
       unit_price,
+      total_price,
       expire_date,
       ...(product_id && { product_id }),
     };
 
-
     const updatedData = await stockInModel.updateInvoiceAndItem(
       invoiceId,
       itemId,
-      invoiceUpdate,
-      itemUpdate
+      { invoiceUpdate, itemUpdate } 
     );
 
-     res.status(200).json({ message: "Updated successfully", data: updatedData });
-     return;
+    res.status(200).json({ message: "Updated successfully", data: updatedData });
   } catch (error) {
     console.error("Update failed:", error);
-     res.status(500).json({ message: "Internal server error" });
-     return;
+    res.status(500).json({ message: "Internal server error" });
   }
 }
 
+
 async deleteItem(req: Request, res: Response) {
-  const { itemId } = req.params;
+  const { invoiceId, itemId } = req.params;
 
   try {
     const stockInModel = new StockInItemModel();
-    const item = await stockInModel.findById(itemId);
-
-    if (!item) {
-       res.status(404).json({ message: "Item not found" });
-       return;
-    }
-
-    await stockInModel.deleteItemById(itemId);
+    await stockInModel.deleteItemById(invoiceId, itemId);
 
     res.status(200).json({ message: "Item deleted successfully" });
   } catch (error) {
@@ -236,6 +216,22 @@ async getTotalQuantityInhand(req: Request, res: Response) {
     return;
   }
 }
+
+async getUnitAvgCost(req: Request, res: Response) {
+  try {
+    const stockInModel = new StockInItemModel();
+    const result = await stockInModel.getTotalUnitAvgCost();
+    res.status(200).json({
+      message: "Get unit average cost successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error in getUnitAvgCost:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+}
+
+
 
 }
 
