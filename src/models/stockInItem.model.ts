@@ -79,7 +79,7 @@ export class StockInItemModel {
   }
 
   // Find a stock-in item by ID with joined data
-  async findById(invoiceId: string, itemId: string): Promise<StockInItem | null> {
+  async findItemById(invoiceId: string, itemId: string): Promise<StockInItem | null> {
     const query = `
       SELECT 
         sii.*, 
@@ -287,7 +287,7 @@ export class StockInItemModel {
 
     // Fetch updated invoice and item
     const invoice = await this.findStockInByInvoiceId(invoiceId);
-    const item = await this.findById(invoiceId,itemId);
+    const item = await this.findItemById(invoiceId,itemId);
 
     return {
       invoice: invoice[0] || updatedInvoiceRes.rows[0],
@@ -416,6 +416,54 @@ async getTotalUnitAvgCost(): Promise<{
 
   const result = await pool.query(query);
   return result.rows;
+}
+
+async getAvailableStockAmount(): Promise<{
+  product_id: string;
+  name_en: string;
+  quantity_in_hand: number;
+  unit_avg_cost: number;
+  available_amount: number;
+}[]> {
+  try {
+    const query = `
+      SELECT 
+        p.id AS product_id,
+        p.name_en,
+        COALESCE(q.quantity_in_hand, 0) AS quantity_in_hand,
+        COALESCE(u.unit_avg_cost, 0) AS unit_avg_cost,
+        (COALESCE(q.quantity_in_hand, 0) * COALESCE(u.unit_avg_cost, 0)) AS available_amount
+      FROM 
+        products p
+      LEFT JOIN (
+        SELECT 
+          si.product_id,
+          (COALESCE(SUM(si.quantity), 0) + COALESCE(prod.beginning_quantity, 0) - COALESCE(so.total_stockout, 0)) AS quantity_in_hand
+        FROM stock_in_items si
+        LEFT JOIN (
+          SELECT product_id, SUM(quantity) AS total_stockout
+          FROM stock_out
+          GROUP BY product_id
+        ) so ON si.product_id = so.product_id
+        LEFT JOIN products prod ON prod.id = si.product_id
+        GROUP BY si.product_id, prod.beginning_quantity, so.total_stockout
+      ) q ON p.id = q.product_id
+      LEFT JOIN (
+        SELECT 
+          product_id,
+          ROUND(SUM(total_price) / NULLIF(SUM(quantity), 0), 2) AS unit_avg_cost
+        FROM stock_in_items
+        GROUP BY product_id
+      ) u ON p.id = u.product_id
+      ORDER BY p.name_en;
+    `;
+
+    const result = await pool.query(query);
+    return result.rows;
+  } catch (error) {
+    console.error("Error fetching available stock amount:", error);
+    throw new Error("Failed to fetch available stock amount");
+  }
 }
 }
 export default StockInItemModel;
