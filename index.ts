@@ -5,6 +5,7 @@ import categoryRouter from './src/routes/category.route';
 import productRouter from './src/routes/product.route';
 import stockInRouter from './src/routes/stockIn.route';
 import stockoutRouter from './src/routes/stockout.route';
+import paginationRoutes from './src/routes/pagination.route';
 import cors from 'cors';
 
 const app = express();
@@ -26,7 +27,7 @@ app.use("/api/category", categoryRouter);
 app.use("/api/product", productRouter);
 app.use("/api/stockIn", stockInRouter);
 app.use("/api/stockout", stockoutRouter);
-
+app.use('/api/items', paginationRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

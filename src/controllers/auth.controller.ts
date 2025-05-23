@@ -76,7 +76,13 @@ export const login = async (req: Request, res: Response) => {
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const userModel = new UserModel();
-    const users = await userModel.findAll();
+
+    const { page = 1, limit = 10 } = req.query; // Default values for pagination
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const users = await userModel.findAll(limitNumber, offset);
     res
       .status(200)
       .json({ message: "Get all user successfully", data: users });

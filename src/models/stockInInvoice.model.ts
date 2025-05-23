@@ -41,9 +41,9 @@ export class InvoiceStockInModel {
     const result = await pool.query(query, values);
     return result.rows[0];
   }
-  async findAll(): Promise<InvoiceStockIn[]> {
-    const query = `SELECT * FROM invoice_stock_in ORDER BY created_at DESC`;
-    const result = await pool.query(query);
+  async findAll(limit: number, offset: number): Promise<InvoiceStockIn[]> {
+    const query = `SELECT * FROM invoice_stock_in ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+    const result = await pool.query(query, [limit, offset]);
     return result.rows as InvoiceStockIn[];
   }
 

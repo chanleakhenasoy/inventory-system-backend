@@ -67,6 +67,12 @@ export class StockInController {
   async getAllStockIn(req: Request, res: Response) {
     try {
       const stockInModel = new InvoiceStockInModel();
+
+      const { page = 1, limit = 10 } = req.query; // Default values for pagination
+      const pageNumber = parseInt(page as string);
+      const limitNumber = parseInt(limit as string);
+      const offset = (pageNumber - 1) * limitNumber;
+
       const total = await stockInModel.findAllStockIn();
       res
         .status(200)

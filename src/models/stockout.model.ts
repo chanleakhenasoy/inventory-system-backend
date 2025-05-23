@@ -41,7 +41,7 @@ const result = await pool.query(query, values);
 return result.rows[0];
 }
 
-async findAll(): Promise<StockOut[]> {
+async findAll(limit: number, offset: number): Promise<StockOut[]> {
   const query = `
     SELECT 
       stock_out.*, 
@@ -55,9 +55,9 @@ async findAll(): Promise<StockOut[]> {
     JOIN 
       users ON stock_out.employee::uuid = users.id 
     ORDER BY 
-      stock_out.created_at DESC;
+      stock_out.created_at DESC LIMIT $1 OFFSET $2;
   `;
-  const result = await pool.query(query);
+  const result = await pool.query(query, [limit, offset]);
   return result.rows;
 }
 

@@ -55,7 +55,7 @@ export class StockInItemModel {
   }
 
   // Find all stock-in items with joined data
-  async findAll(): Promise<StockInItem[]> {
+  async findAll(limit: number, offset: number): Promise<StockInItem[]> {
     const query = `
       SELECT 
         sii.*, 
@@ -71,9 +71,10 @@ export class StockInItemModel {
       JOIN invoice_stock_in AS i ON sii.invoice_stockin_id = i.id
       JOIN suppliers AS s ON i.supplier_id = s.id
       JOIN products AS p ON sii.product_id = p.id
-      ORDER BY sii.created_at DESC
+      ORDER BY sii.created_at DESC 
+      LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query);
+    const result = await pool.query(query, [limit, offset]);
     return result.rows as StockInItem[];
   }
 

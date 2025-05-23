@@ -5,8 +5,7 @@ import { ProductModel } from "../models/product.model";
 
 export const createStockout = async (req: Request, res: Response) => {
 const { quantity} = req.body;
-const { product_id } = req.params;
-const { user_id } = req.params;
+const { product_id, user_id } = req.params;
 const id = uuidv4();
 
 try {
@@ -39,7 +38,13 @@ res.status(500).json({ message: "Internal server error." });
 export const getAllStockouts = async (req: Request, res: Response) => {
   try {
     const stockoutModel = new StockoutModel();
-    const stockouts = await stockoutModel.findAll();
+
+    const { page = 1, limit = 10 } = req.query;
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const stockouts = await stockoutModel.findAll(limitNumber, offset);
     res
       .status(200)
       .json({ message: "Get supplier successfully", data: stockouts });
