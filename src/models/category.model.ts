@@ -49,9 +49,9 @@ export class CategoryModel {
     return result.rows[0] || null;
   }
 
-  async findAll(): Promise<Category[]> {
-    const query = `SELECT * FROM categories ORDER BY created_at DESC`;
-    const result = await pool.query(query);
+  async findAll(limit: number, offset: number): Promise<Category[]> {
+    const query = `SELECT * FROM categories ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+    const result = await pool.query(query, [limit, offset]);
     return result.rows;
   }
 
@@ -91,13 +91,11 @@ export class CategoryModel {
     const query = `DELETE FROM categories WHERE id = $1`;
     const result = await pool.query(query, [id]);
     return result.rows[0] > 0;
-  } 
-  
+  }
+
   async countTotalCategory(): Promise<number> {
     const query = `SELECT COUNT(*) FROM categories`;
     const result = await pool.query(query);
     return parseInt(result.rows[0].count, 10);
   }
-
-
 }

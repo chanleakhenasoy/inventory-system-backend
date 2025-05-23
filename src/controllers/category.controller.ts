@@ -6,6 +6,7 @@ import { CategoryModel } from "../models/category.model";
 export const createCategory = async (req: Request, res: Response) => {
   const { category_name, description } = req.body;
   const id = uuidv4();
+
   try {
     const categoryModel = new CategoryModel();
     const existingCategory = await categoryModel.findOne(category_name);
@@ -39,7 +40,15 @@ export const createCategory = async (req: Request, res: Response) => {
 export const getAllcategory = async (req: Request, res: Response) => {
   try {
     const categoryModel = new CategoryModel();
-    const category = await categoryModel.findAll();
+
+    const { page = 1, limit = 10 } = req.query; // Default values for pagination
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const category = await categoryModel.findAll(limitNumber, offset);
+    console.log(page, limit)
+
     res
       .status(200)
       .json({ message: "Get all category successfully", data: category });

@@ -62,9 +62,9 @@ export class UserModel {
       return rows.length > 0 ? rows[0] : null;
     }
 
-    async findAll(): Promise<User[]> {
-      const query = `SELECT * FROM users`;
-      const result = await pool.query(query);
+    async findAll(limit: number, offset: number): Promise<User[]> {
+      const query = `SELECT * FROM users LIMIT $1 OFFSET $2`;
+      const result = await pool.query(query, [limit, offset]);
       return result.rows;
   }
 

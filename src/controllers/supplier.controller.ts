@@ -38,7 +38,16 @@ export const createSupplier = async (req: Request, res: Response) => {
 export const getAllSuppliers = async (req: Request, res: Response) => {
   try {
     const supplierModel = new SupplierModel();
-    const suppliers = await supplierModel.findAll();
+
+    const { page = 1, limit = 10 } = req.query; // Default values for pagination
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const suppliers = await supplierModel.findAll(limitNumber, offset);
+
+    console.log(page, limit);
+
     res
       .status(200)
       .json({ message: "Get supplier successfully", data: suppliers });
