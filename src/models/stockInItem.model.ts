@@ -46,9 +46,9 @@ export class StockInItemModel {
       return result.rows[0];
     }
 
-     async findAll(): Promise<StockInItem[]> {
-        const query = `SELECT * FROM stock_in_items ORDER BY created_at DESC`;
-        const result = await pool.query(query);
+     async findAll(limit: number, offset: number): Promise<StockInItem[]> {
+        const query = `SELECT * FROM stock_in_items ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+        const result = await pool.query(query, [limit, offset]);
         return result.rows as StockInItem[];
     }
 
