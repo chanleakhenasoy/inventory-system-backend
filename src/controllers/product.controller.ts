@@ -52,7 +52,16 @@ export const createProduct = async (req: Request, res: Response) => {
 export const getAllProduct = async (req: Request, res: Response) => {
   try {
     const productModel = new ProductModel();
-    const product = await productModel.findAll();
+
+    const { page = 1, limit = 10 } = req.query; // Default values for pagination
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const product = await productModel.findAll(limitNumber, offset);
+    
+    console.log(page, limit)
+    
     res
       .status(200)
       .json({ message: "Get all product successfully", data: product });

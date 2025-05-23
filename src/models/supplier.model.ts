@@ -54,9 +54,9 @@ export class SupplierModel {
   }
 
   // Get all suppliers
-  async findAll(): Promise<Supplier[]> {
-    const query = `SELECT * FROM suppliers ORDER BY created_at DESC`;
-    const result = await pool.query(query);
+  async findAll(limit: number, offset: number): Promise<Supplier[]> {
+    const query = `SELECT * FROM suppliers ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+    const result = await pool.query(query, [limit, offset]);
     return result.rows;
   }
 

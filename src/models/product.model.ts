@@ -62,7 +62,7 @@ export class ProductModel {
     return result.rows[0] || null;
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(limit: number, offset: number): Promise<Product[]> {
     const query = `
       SELECT 
         p.id,
@@ -83,8 +83,9 @@ export class ProductModel {
         p.category_id = c.id
       ORDER BY 
         p.created_at DESC
+      LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query);
+    const result = await pool.query(query, [limit, offset]);
     return result.rows;
   }
   
