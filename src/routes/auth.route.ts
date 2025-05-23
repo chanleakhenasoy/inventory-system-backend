@@ -24,7 +24,7 @@ const router = Router();
 
 router.post("/register", protectRoute([RoleEnum.ADMIN]), validateUser, register);
 router.post("/login", validateLogin, login);
-router.get("/", protectRoute([RoleEnum.ADMIN]), getAllUsers);
+router.get("/getAll", protectRoute([RoleEnum.ADMIN]), getAllUsers);
 router.delete("/:id", protectRoute([RoleEnum.ADMIN]), deleteUser);
 
 export default router;

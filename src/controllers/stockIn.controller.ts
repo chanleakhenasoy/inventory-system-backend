@@ -86,7 +86,12 @@ export class StockInController {
   async getAllItems(req: Request, res: Response) {
     try {
       const stockInModel = new StockInItemModel();
-      const total = await stockInModel.findAll();
+      const { page = 1, limit = 10 } = req.query; // Default values for pagination
+      const pageNumber = parseInt(page as string);
+      const limitNumber = parseInt(limit as string);
+      const offset = (pageNumber - 1) * limitNumber;
+
+      const total = await stockInModel.findAll(limitNumber, offset);
       res
         .status(200)
         .json({ message: "Get all items successfully", data: total });
@@ -100,7 +105,7 @@ export class StockInController {
     const { invoiceId,itemId } = req.params;
     try {
       const stockInModel = new StockInItemModel();
-      const total = await stockInModel.findById(invoiceId,itemId);
+      const total = await stockInModel.findItemById(invoiceId,itemId);
       res
         .status(200)
         .json({ message: "Get items by id successfully", data: total });
@@ -110,8 +115,6 @@ export class StockInController {
       return;
     }
   }
-
-
 
 
   async getStockInByInvoiceId(req: Request, res: Response) {
@@ -159,7 +162,7 @@ export class StockInController {
   try {
     const stockInModel = new StockInItemModel();
 
-    const item = await stockInModel.findById(invoiceId, itemId);
+    const item = await stockInModel.findItemById(invoiceId, itemId);
     if (!item) {
       res.status(404).json({ message: "Item not found" });
       return;
@@ -236,8 +239,15 @@ async getUnitAvgCost(req: Request, res: Response) {
     res.status(500).json({ message: "Internal server error." });
   }
 }
-
-
-
+async getAvailableStockAmount(req: Request, res: Response) {
+  try {
+    const stockModel = new StockInItemModel();
+    const data = await stockModel.getAvailableStockAmount();
+    res.status(200).json({ message: "Success", data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 }
 
