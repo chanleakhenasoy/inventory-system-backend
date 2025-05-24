@@ -7,20 +7,16 @@ const router = Router();
 const stockInController = new StockInController();
 
 router.post("/create/:supplier_id", protectRoute([RoleEnum.ADMIN]), stockInController.createStockIn);
-// Ensure getTotalQuanttityItem is imported or defined
 router.get("/item/total/quantity", stockInController.getTotalQuanttityItem);
 router.get("/available-stock-amount", stockInController.getAvailableStockAmount);
 router.get("/unit-avg-cost", stockInController.getUnitAvgCost);
 router.get('/quantity-in-hand', stockInController.getTotalQuantityInhand);
 router.get("/item/total", protectRoute([RoleEnum.ADMIN]), stockInController.getTotalStockIn);
-router.get("/getAll", stockInController.getAllStockIn);
+router.get("/getAll", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.getAllStockIn);
 router.get("/:invoiceId", stockInController.getStockInByInvoiceId)
 router.get("/getAll/items", stockInController.getAllItems);
 router.put("/:invoiceId/:itemId", stockInController.updateStockIn);
 router.get("/:itemId", stockInController.getItemById);
 router.delete("/:invoiceId/:itemId", stockInController.deleteItem);
-
-
-
 
 export default router;
