@@ -10,7 +10,8 @@ export class StockInController {
       const { supplier_id } = req.params;
 
       if (!Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({ message: "Items array is required and cannot be empty." });
+         res.status(400).json({ message: "Items array is required and cannot be empty." });
+         return;
       }
 
       const invoiceId = uuidv4();
@@ -143,7 +144,8 @@ export class StockInController {
       const item = await stockInModel.findById(invoiceId, itemId);
 
       if (!item) {
-        return res.status(404).json({ message: "Item not found" });
+        res.status(404).json({ message: "Item not found" });
+        return;
       }
 
       const invoiceUpdate = {
