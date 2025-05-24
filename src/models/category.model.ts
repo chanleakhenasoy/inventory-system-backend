@@ -48,12 +48,26 @@ export class CategoryModel {
     const result = await pool.query(query, values);
     return result.rows[0] || null;
   }
+// category.model.ts
 
-  async findAll(limit: number, offset: number): Promise<Category[]> {
-    const query = `SELECT * FROM categories ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
-    const result = await pool.query(query, [limit, offset]);
-    return result.rows;
+async findAll(limit: number, offset: number, search?: string): Promise<Category[]> {
+  let query = `SELECT * FROM categories`;
+  const values: any[] = [];
+
+  // Add search condition if search term is provided
+  if (search) {
+    query += ` WHERE category_name ILIKE $1`;
+    values.push(`%${search}%`);
   }
+
+  // Add pagination and ordering
+  query += ` ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+  values.push(limit, offset);
+
+  const result = await pool.query(query, values);
+  return result.rows;
+}
+
 
   // Get supplier by ID
   async findById(id: string): Promise<Category | null> {

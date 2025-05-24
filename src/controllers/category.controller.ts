@@ -37,17 +37,17 @@ export const createCategory = async (req: Request, res: Response) => {
 };
 
 
+// category.controller.ts
 export const getAllcategory = async (req: Request, res: Response) => {
   try {
     const categoryModel = new CategoryModel();
 
-    const { page = 1, limit = 10 } = req.query; // Default values for pagination
+    const { page = 1, limit = 10, search = '' } = req.query;
     const pageNumber = parseInt(page as string);
     const limitNumber = parseInt(limit as string);
     const offset = (pageNumber - 1) * limitNumber;
 
-    const category = await categoryModel.findAll(limitNumber, offset);
-    console.log(page, limit)
+    const category = await categoryModel.findAll(limitNumber, offset, search as string);
 
     res
       .status(200)

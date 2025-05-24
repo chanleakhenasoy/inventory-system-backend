@@ -13,6 +13,7 @@ router.get("/total", protectRoute([RoleEnum.ADMIN,]), getTotalCategory);
 router.get("/:id",protectRoute([RoleEnum.ADMIN,]), getCategoryById);
 router.put("/:id",protectRoute([RoleEnum.ADMIN,]), updateCategory); 
 router.delete("/:id",protectRoute([RoleEnum.ADMIN,]), deleteCategory);
+router.get("/search", getAllcategory); // No auth for public search
  
 
 
