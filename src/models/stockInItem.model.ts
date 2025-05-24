@@ -465,5 +465,17 @@ async getAvailableStockAmount(): Promise<{
     throw new Error("Failed to fetch available stock amount");
   }
 }
+
+async countTotalStockInQuantity(): Promise<number> {
+  const query = `
+    SELECT 
+      COALESCE(SUM(quantity), 0) AS total_stock_in
+    FROM 
+      stock_in_items;
+  `;
+  const result = await pool.query(query);
+  return result.rows[0].total_stock_in;
+}
+
 }
 export default StockInItemModel;

@@ -249,5 +249,18 @@ async getAvailableStockAmount(req: Request, res: Response) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
-}
 
+async getTotalQuanttityItem(req: Request, res: Response) {
+  try {
+    const stockInModel = new StockInItemModel();
+    const total = await stockInModel.countTotalStockInQuantity();
+    res
+      .status(200)
+      .json({ message: "Get stock in total successfully", data: total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+    return;
+  }
+}
+}
