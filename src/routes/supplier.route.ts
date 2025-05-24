@@ -11,7 +11,10 @@ router.post("/create",validateSupplier,protectRoute([RoleEnum.ADMIN]), createSup
 router.get("/getAll",protectRoute([RoleEnum.ADMIN]),getAllSuppliers);
 router.get("/:id", protectRoute([RoleEnum.ADMIN]),getSupplierById);
 router.put("/:id", protectRoute([RoleEnum.ADMIN]),updateSupplier); 
-router.delete("/:id",protectRoute([RoleEnum.ADMIN]),deleteSupplier);// Assuming you want to use the same create function for update
+router.delete("/:id",protectRoute([RoleEnum.ADMIN]),deleteSupplier);
+// router.get("/search", getAllSuppliers); 
+
+// Assuming you want to use the same create function for update
 
 
  export default router;

@@ -54,11 +54,29 @@ export class SupplierModel {
   }
 
   // Get all suppliers
-  async findAll(limit: number, offset: number): Promise<Supplier[]> {
-    const query = `SELECT * FROM suppliers ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
-    const result = await pool.query(query, [limit, offset]);
+  async findAll(limit: number, offset: number, search?: string): Promise<Supplier[]> {
+    let query = `SELECT * FROM suppliers`;
+    const values: any[] = [];
+  
+    // Add search condition if search term is provided
+    if (search) {
+      query += ` WHERE supplier_name ILIKE $1`;
+      values.push(`%${search}%`);
+    }
+  
+    // Add pagination and ordering
+    query += ` ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+    values.push(limit, offset);
+  
+    const result = await pool.query(query, values);
     return result.rows;
   }
+  
+  // async findAll(limit: number, offset: number, search?: string): Promise<Supplier[]> {
+  //   const query = `SELECT * FROM suppliers ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+  //   const result = await pool.query(query, [limit, offset]);
+  //   return result.rows;
+  // }
 
   // Get supplier by ID
   async findById(id: string): Promise<Supplier | null> {
