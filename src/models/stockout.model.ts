@@ -41,8 +41,8 @@ const result = await pool.query(query, values);
 return result.rows[0];
 }
 
-async findAll(limit: number, offset: number): Promise<StockOut[]> {
-  const query = `
+async findAll(limit: number, offset: number, search: string): Promise<StockOut[]> {
+  let query = `
     SELECT 
       stock_out.*, 
       products.name_en, 
@@ -54,13 +54,28 @@ async findAll(limit: number, offset: number): Promise<StockOut[]> {
       products ON stock_out.product_id::uuid = products.id 
     JOIN 
       users ON stock_out.employee::uuid = users.id 
-    ORDER BY 
-      stock_out.created_at DESC LIMIT $1 OFFSET $2;
   `;
-  const result = await pool.query(query, [limit, offset]);
+  const queryParams: any[] = [limit, offset];
+
+  // Add search condition if search term is provided
+  if (search) {
+    query += `
+      WHERE 
+        products.name_en ILIKE $3
+       
+    `;
+    queryParams.push(`%${search}%`);
+  }
+
+  query += `
+    ORDER BY 
+      stock_out.created_at DESC 
+    LIMIT $1 OFFSET $2
+  `;
+
+  const result = await pool.query(query, queryParams);
   return result.rows;
 }
-
 async countStockoutItem(): Promise<{ name_en: string; total_quantity: number }[]> {
   const query = `
     SELECT 

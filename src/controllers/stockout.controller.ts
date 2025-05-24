@@ -39,12 +39,12 @@ export const getAllStockouts = async (req: Request, res: Response) => {
   try {
     const stockoutModel = new StockoutModel();
 
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, search = '' } = req.query;
     const pageNumber = parseInt(page as string);
     const limitNumber = parseInt(limit as string);
     const offset = (pageNumber - 1) * limitNumber;
 
-    const stockouts = await stockoutModel.findAll(limitNumber, offset);
+    const stockouts = await stockoutModel.findAll(limitNumber, offset, search as string);
     res
       .status(200)
       .json({ message: "Get supplier successfully", data: stockouts });
