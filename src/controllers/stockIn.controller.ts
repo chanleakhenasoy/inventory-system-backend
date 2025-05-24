@@ -86,7 +86,13 @@ export class StockInController {
   async getAllItems(req: Request, res: Response) {
     try {
       const stockInModel = new StockInItemModel();
-      const total = await stockInModel.findAll();
+
+      const { page = 1, limit = 10 } = req.query; // Default values for pagination
+      const pageNumber = parseInt(page as string);
+      const limitNumber = parseInt(limit as string);
+      const offset = (pageNumber - 1) * limitNumber;
+
+      const total = await stockInModel.findAll(limitNumber, offset);
       res
         .status(200)
         .json({ message: "Get all items successfully", data: total });
