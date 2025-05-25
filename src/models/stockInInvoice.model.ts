@@ -41,13 +41,12 @@ export class InvoiceStockInModel {
     const result = await pool.query(query, values);
     return result.rows[0];
   }
-  async findAll(limit: number, offset: number): Promise<InvoiceStockIn[]> {
-    const query = `SELECT * FROM invoice_stock_in ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
-    const result = await pool.query(query, [limit, offset]);
-    return result.rows as InvoiceStockIn[];
-  }
-
-  async findAllStockIn(limit: number, offset: number): Promise<InvoiceStockIn[]> {
+  // async findAll(limit: number, offset: number): Promise<InvoiceStockIn[]> {
+  //   const query = `SELECT * FROM invoice_stock_in ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+  //   const result = await pool.query(query, [limit, offset]);
+  //   return result.rows as InvoiceStockIn[];
+  // }
+  async findAllStockIn(limit: number, offset: number, p0: string): Promise<InvoiceStockIn[]> {
     const query = `
       SELECT 
         isi.id,
@@ -80,15 +79,15 @@ export class InvoiceStockInModel {
       LEFT JOIN suppliers s ON isi.supplier_id = s.id
       LEFT JOIN stock_in_items sii ON isi.id = sii.invoice_stockIn_id
       LEFT JOIN products p ON sii.product_id = p.id
+      WHERE isi.reference_number ILIKE $3 OR s.supplier_name ILIKE $3
       GROUP BY isi.id, s.supplier_name
       ORDER BY isi.created_at DESC
       LIMIT $1 OFFSET $2;
     `;
-  
-    const result = await pool.query(query, [limit, offset]);
+    
+    const result = await pool.query(query, [limit, offset, `%${p0}%`]);
     return result.rows;
   }
-  
 
   async findStockInByInvoiceId(invoiceId: string): Promise<any | null> {
     const query = `

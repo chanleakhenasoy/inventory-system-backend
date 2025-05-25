@@ -62,12 +62,12 @@ export class StockInController {
   async getAllStockIn(req: Request, res: Response) {
     try {
       const stockInModel = new InvoiceStockInModel();
-      const { page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 10, search = "" } = req.query;
       const pageNumber = parseInt(page as string);
       const limitNumber = parseInt(limit as string);
       const offset = (pageNumber - 1) * limitNumber;
 
-      const total = await stockInModel.findAllStockIn(limitNumber, offset);
+      const total = await stockInModel.findAllStockIn(limitNumber, offset, search as string);
 
       res.status(200).json({ message: "Get stock in all successfully", data: total });
     } catch (error) {
