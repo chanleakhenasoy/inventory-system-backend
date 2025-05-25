@@ -22,11 +22,9 @@ import { RoleEnum } from "../utils/enum";
 
 const router = Router();
 
-router.post("/register", protectRoute([RoleEnum.ADMIN]), validateUser, register);
-router.post("/login", validateLogin, login);
-router.get("/getAll", protectRoute([RoleEnum.ADMIN]), getAllUsers);
-router.delete("/:id", protectRoute([RoleEnum.ADMIN]), deleteUser);
-// router.get("/search", getAllUsers); 
-
+router.post("/register", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER]), validateUser, register);
+router.post("/login",validateLogin, login);
+router.get("/getAll", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER]), getAllUsers);
+router.delete("/:id", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER]), deleteUser);
 
 export default router;
