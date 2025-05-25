@@ -4,6 +4,9 @@ import { StockInItemModel } from "../models/stockInItem.model";
 import { v4 as uuidv4 } from "uuid";
 
 export class StockInController {
+    getAvailableStockAmount(arg0: string, getAvailableStockAmount: any) {
+        throw new Error("Method not implemented.");
+    }
   async createStockIn(req: Request, res: Response) {
     try {
       const { purchase_date, reference_number, due_date, items } = req.body;
@@ -94,7 +97,7 @@ export class StockInController {
     const { invoiceId, itemId } = req.params;
     try {
       const stockInModel = new StockInItemModel();
-      const total = await stockInModel.findById(invoiceId, itemId);
+      const total = await stockInModel.findItemById(invoiceId, itemId);
       res.status(200).json({ message: "Get items by id successfully", data: total });
     } catch (error) {
       console.error(error);
@@ -141,7 +144,7 @@ export class StockInController {
 
     try {
       const stockInModel = new StockInItemModel();
-      const item = await stockInModel.findById(invoiceId, itemId);
+      const item = await stockInModel.findItemById(invoiceId, itemId);
 
       if (!item) {
         res.status(404).json({ message: "Item not found" });
