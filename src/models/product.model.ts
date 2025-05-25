@@ -62,33 +62,48 @@ export class ProductModel {
     return result.rows[0] || null;
   }
 
-  async findAll(limit: number, offset: number): Promise<Product[]> {
-    const query = `
-      SELECT 
-        p.id,
-        p.category_id,
-        c.category_name AS category_name,
-        p.product_code,
-        p.name_en,
-        p.name_kh,
-        p.beginning_quantity,
-        p.minimum_stock,
-        p.created_at,
-        p.updated_at
-      FROM 
-        products p
-      JOIN 
-        categories c 
-      ON 
-        p.category_id = c.id
-      ORDER BY 
-        p.created_at DESC
-      LIMIT $1 OFFSET $2
+ async findAll(limit: number, offset: number, search: string): Promise<Product[]> {
+  let query = `
+    SELECT 
+      p.id,
+      p.category_id,
+      c.category_name AS category_name,
+      p.product_code,
+      p.name_en,
+      p.name_kh,
+      p.beginning_quantity,
+      p.minimum_stock,
+      p.created_at,
+      p.updated_at
+    FROM 
+      products p
+    JOIN 
+      categories c 
+    ON 
+      p.category_id = c.id
+  `;
+  const queryParams: any[] = [limit, offset];
+
+  // Add search condition if search term is provided
+  if (search) {
+    query += `
+      WHERE 
+        p.name_en ILIKE $3
+        OR p.name_kh ILIKE $3
+        OR p.product_code ILIKE $3
     `;
-    const result = await pool.query(query, [limit, offset]);
-    return result.rows;
+    queryParams.push(`%${search}%`);
   }
-  
+
+  query += `
+    ORDER BY 
+      p.created_at DESC
+    LIMIT $1 OFFSET $2
+  `;
+
+  const result = await pool.query(query, queryParams);
+  return result.rows;
+}
 
 async findById(id: string): Promise<Product | null> {
   const query = `

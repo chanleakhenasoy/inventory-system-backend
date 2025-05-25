@@ -39,12 +39,12 @@ export const getAllSuppliers = async (req: Request, res: Response) => {
   try {
     const supplierModel = new SupplierModel();
 
-    const { page = 1, limit = 10 } = req.query; // Default values for pagination
+    const { page = 1, limit = 10, search = '' } = req.query; // Default values for pagination
     const pageNumber = parseInt(page as string);
     const limitNumber = parseInt(limit as string);
     const offset = (pageNumber - 1) * limitNumber;
 
-    const suppliers = await supplierModel.findAll(limitNumber, offset);
+    const suppliers = await supplierModel.findAll(limitNumber, offset, search as string);
 
     console.log(page, limit);
 

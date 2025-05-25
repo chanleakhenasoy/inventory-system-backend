@@ -62,11 +62,28 @@ export class UserModel {
       return rows.length > 0 ? rows[0] : null;
     }
 
-    async findAll(limit: number, offset: number): Promise<User[]> {
-      const query = `SELECT * FROM users LIMIT $1 OFFSET $2`;
-      const result = await pool.query(query, [limit, offset]);
-      return result.rows;
-  }
+    async findAll(limit: number, offset: number, search?: string): Promise<User[]> {
+        let query = `SELECT * FROM users`;
+        const values: any[] = [];
+      
+        // Add search condition if search term is provided
+        if (search) {
+          query += ` WHERE user_name ILIKE $1`;
+          values.push(`%${search}%`);
+        }
+      
+        // Add pagination and ordering
+        query += ` ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+        values.push(limit, offset);
+      
+        const result = await pool.query(query, values);
+        return result.rows;
+      }
+  //   async findAll(limit: number, offset: number): Promise<User[]> {
+  //     const query = `SELECT * FROM users LIMIT $1 OFFSET $2`;
+  //     const result = await pool.query(query, [limit, offset]);
+  //     return result.rows;
+  // }
 
   async delete(id: string): Promise<boolean> {
     const query = `DELETE FROM users WHERE id = $1`;
