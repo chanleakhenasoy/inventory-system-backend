@@ -9,5 +9,6 @@ const router = Router();
 router.post("/create/:product_id/:user_id",validateStockout, protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), createStockout);
 router.get("/item/total" ,protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]),getTotalStockOut);
 router.get("/getAll",protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]),getAllStockouts,)
+router.get("/total", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), getTotalStockOut);
 
 export default router;
