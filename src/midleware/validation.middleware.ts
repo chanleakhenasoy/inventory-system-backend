@@ -8,7 +8,7 @@ const userSchema = z.object({
   email: z.string()
     .email()
     .regex(/^[\w.-]+@([\w-]+\.)*pse\.ngo$/, {
-      message: "Email must belong to pse.ngo",
+      message: "Email must belong to institute.pse.ngo or pse.ngo",
     }),
   password: z.string().min(8),
   role: z.enum(["user", "admin"]),
@@ -21,7 +21,7 @@ const loginSchema = z.object({
   email: z.string()
     .email()
     .regex(/^[\w.-]+@([\w-]+\.)*pse\.ngo$/, {
-      message: "Email must belong to pse.ngo",
+      message: "Email must belong institute.pse.ngo or pse.ngo",
     }),
   password: z.string().min(8),
 });
