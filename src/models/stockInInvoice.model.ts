@@ -135,7 +135,6 @@ export class InvoiceStockInModel {
     return response;
   }
   
-
   
   async findOne(id: string): Promise<InvoiceStockIn | null> {
     const query = `
@@ -146,5 +145,33 @@ export class InvoiceStockInModel {
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
   }
+  async deleteInvoiceStockInById(id: string): Promise<void> {
+    const client = await pool.connect();
+  
+    try {
+      await client.query('BEGIN');
+  
+      // Delete related stock_in_items
+      await client.query(
+        'DELETE FROM stock_in_items WHERE invoice_stockIn_id = $1',
+        [id]
+      );
+  
+      // Delete the invoice itself
+      await client.query(
+        'DELETE FROM invoice_stock_in WHERE id = $1',
+        [id]
+      );
+  
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error deleting invoice:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
 
 }

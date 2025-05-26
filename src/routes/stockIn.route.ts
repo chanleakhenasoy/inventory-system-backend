@@ -8,6 +8,8 @@ const stockInController = new StockInController();
 
 router.post("/create/:supplier_id", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.createStockIn);
 router.get("/item/total/quantity", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.getTotalQuanttityItem);
+router.delete("/delete/:invoiceId",protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.deleteInvoice);
+
 // router.get("/available-stock-amount", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.getAvailableStockAmount);
 // router.get("/unit-avg-cost", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.getUnitAvgCost);
 // router.get('/quantity-in-hand', protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]),stockInController.getTotalQuantityInhand);
@@ -18,5 +20,6 @@ router.get("/getAll/items", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, Role
 router.put("/:invoiceId/:itemId", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.updateStockIn);
 router.get("/:itemId", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.getItemById);
 router.delete("/:invoiceId/:itemId", protectRoute([RoleEnum.ADMIN, RoleEnum.MANAGER, RoleEnum.OFFICER]), stockInController.deleteItem);
+
 
 export default router;
