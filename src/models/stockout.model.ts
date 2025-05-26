@@ -103,7 +103,7 @@ async countTotalStockout(): Promise<{ total_quantity: number }> {
       stock_out;
   `;
   const result = await pool.query(query);
-  return result.rows[0]; // returns: { total_quantity: 200 }
+  return result.rows[0];
 }
 
 }

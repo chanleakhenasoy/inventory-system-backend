@@ -68,18 +68,21 @@ export const getTotalStockOut = async (req: Request, res: Response) => {
     }
   };
 
-  export const getTotalAllStockOut = async (req: Request, res: Response) => {
+  export const getSumOfStockout = async (req: Request, res: Response) => {
     try {
       const stockOutModel = new StockoutModel();
-      const overallTotal = await stockOutModel.countTotalStockout(); // Only this!
+      const total = await stockOutModel.countTotalStockout();
   
       res.status(200).json({
-        message: 'Get total stock-out quantity successfully',
-        data: overallTotal, // returns: { total_quantity: number }
+        message: "Get total stock-out quantity successfully",
+        data: {
+          total_quantity: total.total_quantity,
+        },
       });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Internal server error.' });
+      res.status(500).json({ message: "Internal server error." });
     }
+    
   };
   
