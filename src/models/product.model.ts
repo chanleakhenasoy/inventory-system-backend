@@ -163,6 +163,60 @@ async update(id: string, data: Partial<Product>): Promise<Product | null> {
     const result = await pool.query(query);
     return parseInt(result.rows[0].count, 10);
   }
-}
 
+  async getStockSummary(): Promise<{
+    stockSummary: {
+      product_id: string;
+      name_en: string;
+      name_kh: string;
+      beginning_quantity: number;
+      total_stockin: number;
+      total_stockout: number;
+      quantity_in_hand: number;
+      unit_avg_cost: number;
+      available_amount: number;
+      minimum_stock: number | null;
+    }[];
+  }> {
+    const stockSummaryResult = await pool.query(`
+      SELECT 
+        p.id AS product_id,
+        p.name_en,
+        p.name_kh,
+        p.beginning_quantity,
+        COALESCE(stockin.total_stockin, 0) AS total_stockin,
+        COALESCE(stockout.total_stockout, 0) AS total_stockout,
+        (p.beginning_quantity + COALESCE(stockin.total_stockin, 0) - COALESCE(stockout.total_stockout, 0)) AS quantity_in_hand,
+        ROUND(COALESCE(unitcost.unit_avg_cost, 0), 2) AS unit_avg_cost,
+        ROUND(
+          (p.beginning_quantity + COALESCE(stockin.total_stockin, 0) - COALESCE(stockout.total_stockout, 0)) * 
+          ROUND(COALESCE(unitcost.unit_avg_cost, 0), 2), 
+        2) AS available_amount,
+        p.minimum_stock
+      FROM products p
+      LEFT JOIN (
+        SELECT product_id, SUM(quantity) AS total_stockin
+        FROM stock_in_items
+        GROUP BY product_id
+      ) stockin ON stockin.product_id = p.id
+      LEFT JOIN (
+        SELECT product_id, SUM(quantity) AS total_stockout
+        FROM stock_out
+        GROUP BY product_id
+      ) stockout ON stockout.product_id = p.id
+      LEFT JOIN (
+        SELECT 
+          product_id, 
+          SUM(total_price) / NULLIF(SUM(quantity), 0) AS unit_avg_cost
+        FROM stock_in_items
+        GROUP BY product_id
+      ) unitcost ON unitcost.product_id = p.id
+      ORDER BY p.name_en;
+    `);
+
+    return {
+      stockSummary: stockSummaryResult.rows,
+    };
+  }
+}
 

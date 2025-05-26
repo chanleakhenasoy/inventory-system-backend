@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { CategoryModel } from "../models/category.model";
 import { ProductModel } from "../models/product.model";
+import { StockInItemModel } from "../models/stockInItem.model";
 
 export const createProduct = async (req: Request, res: Response) => {
   const { category_id } = req.params; 
@@ -153,5 +154,15 @@ export const getTotalProduct = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: "Internal server error." });
     return;
+  }
+};
+export const getProductdatabase = async (req: Request, res: Response) => {
+  try {
+    const productModel = new ProductModel();
+    const total = await productModel.getStockSummary();
+    res.json({ success: true, data: total });
+  } catch (error) {
+    console.error("Error in getStockSummaryController:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch stock summary" });
   }
 };

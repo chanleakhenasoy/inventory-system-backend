@@ -4,9 +4,7 @@ import { StockInItemModel } from "../models/stockInItem.model";
 import { v4 as uuidv4 } from "uuid";
 
 export class StockInController {
-    getAvailableStockAmount(arg0: string, getAvailableStockAmount: any) {
-        throw new Error("Method not implemented.");
-    }
+  
   async createStockIn(req: Request, res: Response) {
     try {
       const { purchase_date, reference_number, due_date, items } = req.body;
@@ -117,16 +115,16 @@ export class StockInController {
     }
   }
 
-  async getTotalStockIn(req: Request, res: Response) {
-    try {
-      const stockInModel = new StockInItemModel();
-      const total = await stockInModel.countProductsInStock();
-      res.status(200).json({ message: "Get stock in total successfully", data: total });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error." });
-    }
-  }
+  // async getTotalStockIn(req: Request, res: Response) {
+  //   try {
+  //     const stockInModel = new StockInItemModel();
+  //     const total = await stockInModel.countProductsInStock();
+  //     res.status(200).json({ message: "Get stock in total successfully", data: total });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: "Internal server error." });
+  //   }
+  // }
 
   async updateStockIn(req: Request, res: Response) {
     const { invoiceId, itemId } = req.params;
@@ -190,30 +188,30 @@ export class StockInController {
     }
   }
 
-  async getTotalQuantityInhand(req: Request, res: Response) {
-    try {
-      const stockInModel = new StockInItemModel();
-      const total = await stockInModel.getTotalQuantityInhand();
-      res.status(200).json({ message: "Get total quantity in hand successfully", data: total });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error." });
-    }
-  }
+//   async getTotalQuantityInhand(req: Request, res: Response) {
+//     try {
+//       const stockInModel = new StockInItemModel();
+//       const total = await stockInModel.getTotalQuantityInhand();
+//       res.status(200).json({ message: "Get total quantity in hand successfully", data: total });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: "Internal server error." });
+//     }
+//   }
 
-  async getUnitAvgCost(req: Request, res: Response) {
-    try {
-      const stockInModel = new StockInItemModel();
-      const result = await stockInModel.getTotalUnitAvgCost();
-      res.status(200).json({
-        message: "Get unit average cost successfully",
-        data: result,
-      });
-    } catch (error) {
-      console.error("Error in getUnitAvgCost:", error);
-      res.status(500).json({ message: "Internal server error." });
-    }
-  }
+//   async getUnitAvgCost(req: Request, res: Response) {
+//     try {
+//       const stockInModel = new StockInItemModel();
+//       const result = await stockInModel.getTotalUnitAvgCost();
+//       res.status(200).json({
+//         message: "Get unit average cost successfully",
+//         data: result,
+//       });
+//     } catch (error) {
+//       console.error("Error in getUnitAvgCost:", error);
+//       res.status(500).json({ message: "Internal server error." });
+//     }
+//   }
 
 
 async getTotalQuanttityItem(req: Request, res: Response) {
@@ -230,4 +228,5 @@ async getTotalQuanttityItem(req: Request, res: Response) {
   }
 }
 }
+
 

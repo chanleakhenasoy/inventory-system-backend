@@ -302,24 +302,7 @@ export class StockInItemModel {
   }
 }
   
-  async countProductsInStock(): Promise<{ name_en: string; total_quantity: number }[]> {
-    const query = `
-      SELECT 
-        p.name_en, 
-        COALESCE(SUM(sii.quantity), 0) AS total_quantity
-      FROM 
-        products p
-      LEFT JOIN 
-        stock_in_items sii ON p.id = sii.product_id
-      GROUP BY 
-        p.name_en
-      ORDER BY 
-        p.name_en;
-    `;
-    const result = await pool.query(query);
-    return result.rows;
-  }
-
+ 
   async deleteItemById(invoiceId: string, itemId: string): Promise<void> {
     const client = await pool.connect();
   
@@ -348,134 +331,17 @@ export class StockInItemModel {
       client.release();
     }
   }
-  
 
-
-async getTotalQuantityInhand(): Promise<{
-  id: string;
-  name_en: string;
-  name_kh: string;
-  beginning_quantity: number;
-  total_stockin: number;
-  total_stockout: number;
-  quantity_in_hand: number;
-  minimum_stock: number;
-}[]> {
-  const query = `
-    SELECT 
-      p.id,
-      p.name_en,
-      p.name_kh,
-      p.beginning_quantity,
-      COALESCE(s.total_stockin, 0) AS total_stockin,
-      COALESCE(o.total_stockout, 0) AS total_stockout,
-      (p.beginning_quantity + COALESCE(s.total_stockin, 0) - COALESCE(o.total_stockout, 0)) AS quantity_in_hand,
-      p.minimum_stock
-    FROM 
-      products p
-    LEFT JOIN (
-      SELECT product_id, SUM(quantity) AS total_stockin
-      FROM stock_in_items
-      GROUP BY product_id
-    ) s ON p.id = s.product_id
-    LEFT JOIN (
-      SELECT product_id, SUM(quantity) AS total_stockout
-      FROM stock_out
-      GROUP BY product_id
-    ) o ON p.id = o.product_id
-    ORDER BY 
-      p.name_en;
-  `;
-  const result = await pool.query(query);
-  return result.rows;
-}
- 
-
-
-async getTotalUnitAvgCost(): Promise<{
-  id: string;
-  product_id: string;
-  total_price: number;
-  unit_price: number;
-  calculated_quantity: number;
-}[]> {
-  const query = `
-    SELECT 
-      id,
-      product_id,
-      total_price,
-      unit_price,
-      ROUND(total_price / NULLIF(unit_price, 0), 2) AS calculated_quantity
-    FROM 
-      stock_in_items
-    WHERE 
-      total_price IS NOT NULL AND unit_price IS NOT NULL
-    ORDER BY 
-      created_at DESC;
-  `;
-
-  const result = await pool.query(query);
-  return result.rows;
-}
-
-async getAvailableStockAmount(): Promise<{
-  product_id: string;
-  name_en: string;
-  quantity_in_hand: number;
-  unit_avg_cost: number;
-  available_amount: number;
-}[]> {
-  try {
+  async countTotalStockInQuantity(): Promise<number> {
     const query = `
       SELECT 
-        p.id AS product_id,
-        p.name_en,
-        COALESCE(q.quantity_in_hand, 0) AS quantity_in_hand,
-        COALESCE(u.unit_avg_cost, 0) AS unit_avg_cost,
-        (COALESCE(q.quantity_in_hand, 0) * COALESCE(u.unit_avg_cost, 0)) AS available_amount
+        COALESCE(SUM(quantity), 0) AS total_stock_in
       FROM 
-        products p
-      LEFT JOIN (
-        SELECT 
-          si.product_id,
-          (COALESCE(SUM(si.quantity), 0) + COALESCE(prod.beginning_quantity, 0) - COALESCE(so.total_stockout, 0)) AS quantity_in_hand
-        FROM stock_in_items si
-        LEFT JOIN (
-          SELECT product_id, SUM(quantity) AS total_stockout
-          FROM stock_out
-          GROUP BY product_id
-        ) so ON si.product_id = so.product_id
-        LEFT JOIN products prod ON prod.id = si.product_id
-        GROUP BY si.product_id, prod.beginning_quantity, so.total_stockout
-      ) q ON p.id = q.product_id
-      LEFT JOIN (
-        SELECT 
-          product_id,
-          ROUND(SUM(total_price) / NULLIF(SUM(quantity), 0), 2) AS unit_avg_cost
-        FROM stock_in_items
-        GROUP BY product_id
-      ) u ON p.id = u.product_id
-      ORDER BY p.name_en;
+        stock_in_items;
     `;
-
     const result = await pool.query(query);
-    return result.rows;
-  } catch (error) {
-    console.error("Error fetching available stock amount:", error);
-    throw new Error("Failed to fetch available stock amount");
+    return result.rows[0].total_stock_in;
   }
-}
+  
+  }
 
-async countTotalStockInQuantity(): Promise<number> {
-  const query = `
-    SELECT 
-      COALESCE(SUM(quantity), 0) AS total_stock_in
-    FROM 
-      stock_in_items;
-  `;
-  const result = await pool.query(query);
-  return result.rows[0].total_stock_in;
-}
-
-}
-export default StockInItemModel;
