@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { InvoiceStockInModel } from "../models/stockInInvoice.model";
 import { StockInItemModel } from "../models/stockInItem.model";
 import { v4 as uuidv4 } from "uuid";
+import { date } from "zod";
 
 export class StockInController {
   
@@ -185,6 +186,18 @@ export class StockInController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Failed to delete item" });
+    }
+  }
+
+  async deleteInvoice(req: Request, res: Response) {
+    const { invoiceId } = req.params;
+    try {
+      const stockInModel = new InvoiceStockInModel();
+      const data = await stockInModel.deleteInvoiceStockInById(invoiceId);
+      res.status(200).json({ message: "Invoice deleted successfully", data });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to delete invoice" });
     }
   }
 
