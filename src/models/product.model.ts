@@ -127,29 +127,30 @@ async findById(id: string): Promise<Product | null> {
 }
 
 
-  async update(id: string, data: Partial<Product>): Promise<Product | null> {
-    if (!data || Object.keys(data).length === 0) {
-      throw new Error("Product data is required to update a product.");
-    }
-  
-    // Automatically add updated_at field
-    data.updated_at = new Date();
-  
-    const keys = Object.keys(data);
-    const values = Object.values(data);
-  
-    const setClause = keys.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
-  
-    const query = `
-      UPDATE products
-      SET ${setClause}
-      WHERE id = $${keys.length + 1}
-      RETURNING *
-    `;
-  
-    const result = await pool.query(query, [...values, id]);
-    return result.rows[0] || null;
+async update(id: string, data: Partial<Product>): Promise<Product | null> {
+  if (!data || Object.keys(data).length === 0) {
+    throw new Error("Product data is required to update a product.");
   }
+
+  // Automatically add updated_at field
+  data.updated_at = new Date();
+
+  const keys = Object.keys(data);
+  const values = Object.values(data);
+
+  // Map keys to SQL parameters, handling category_id explicitly if needed
+  const setClause = keys.map((key, idx) => `${key} = $${idx + 1}`).join(", ");
+
+  const query = `
+    UPDATE products
+    SET ${setClause}
+    WHERE id = $${keys.length + 1}
+    RETURNING *
+  `;
+
+  const result = await pool.query(query, [...values, id]);
+  return result.rows[0] || null;
+}
   
   async delete(id: string): Promise<boolean> {
     const query = `DELETE FROM products WHERE id = $1`;

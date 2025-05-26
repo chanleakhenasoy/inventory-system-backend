@@ -95,7 +95,7 @@ export const getProductById = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { product_code, name_en, name_kh, beginning_quantity, minimum_stock} = req.body;
+    const { product_code, name_en, name_kh, beginning_quantity, minimum_stock, category_id} = req.body;
     const productModel = new ProductModel();
 
     const existingProduct = await productModel.findById(id);
@@ -111,6 +111,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         name_kh,
         beginning_quantity,
         minimum_stock,
+        category_id,
         created_at: new Date(),
         updated_at: new Date(),
     });
