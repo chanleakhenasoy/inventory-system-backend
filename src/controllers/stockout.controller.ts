@@ -54,19 +54,19 @@ export const getAllStockouts = async (req: Request, res: Response) => {
   }
 };
 
-export const getTotalStockOut = async (req: Request, res: Response) => {
-    try {
-      const stockOutModel = new StockoutModel();
-      const total = await stockOutModel.countStockoutItem();
-      res
-        .status(200)
-        .json({ message: "Get stock out total successfully", data: total });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error." });
-      return;
-    }
-  };
+// export const getTotalStockOut = async (req: Request, res: Response) => {
+//     try {
+//       const stockOutModel = new StockoutModel();
+//       const total = await stockOutModel.countStockoutItem();
+//       res
+//         .status(200)
+//         .json({ message: "Get stock out total successfully", data: total });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: "Internal server error." });
+//       return;
+//     }
+//   };
 
   export const getSumOfStockout = async (req: Request, res: Response) => {
     try {

@@ -10,8 +10,9 @@ const userSchema = z.object({
     .regex(/^[\w.-]+@([\w-]+\.)*pse\.ngo$/, {
       message: "Email must belong to pse.ngo",
     }),
+    role: z.enum(["admin", "manager", "officer"]),
   password: z.string().min(8),
-  role: z.enum(["user", "admin"]),
+  
 });
 
 
