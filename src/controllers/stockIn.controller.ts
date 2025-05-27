@@ -52,9 +52,19 @@ export class StockInController {
         invoice,
         items: createdItems,
       });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error." });
+    } catch (error: any) {
+      if (error.code === "23505") {
+         res.status(400).json({
+          message: "Product name or reference number already exist.",
+        });
+        return;
+      }
+    
+      // default for other errors
+      res.status(500).json({
+        message: "Internal server error.",
+      });
+      return; 
     }
   }
 
