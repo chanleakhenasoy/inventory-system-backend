@@ -16,7 +16,7 @@ export const createProduct = async (req: Request, res: Response) => {
     // Check if product already exists
     const existingProduct = await productModel.findOne(product_code, name_en, name_kh);
     if (existingProduct) {
-       res.status(409).json({ message: "Product already exists." });
+       res.status(400).json({ message: "Product already exists." });
        return;
     }
 
@@ -44,9 +44,19 @@ export const createProduct = async (req: Request, res: Response) => {
     const data = await newProduct.create();
 
     res.status(201).json({ message: "Product created successfully.", data });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error." });
+  } catch (error: any) {
+    if (error.code === "23505") {
+     res.status(400).json({
+        message: "Product name already exist.",
+      });
+      return; 
+    }
+  
+  
+     res.status(500).json({
+      message: "Internal server error.",
+    });
+    return;
   }
 };
 
@@ -160,7 +170,7 @@ export const getProductdatabase = async (req: Request, res: Response) => {
   try {
     const productModel = new ProductModel();
 
-    const { page = 1, limit = 10, search = '' } = req.query; // Default values for pagination
+    const { page = 1, limit = 10, search = '' } = req.query; 
     const pageNumber = parseInt(page as string);
     const limitNumber = parseInt(limit as string);
     const offset = (pageNumber - 1) * limitNumber;
