@@ -8,13 +8,6 @@ services:
     container_name: inventory-backend
     ports:
       - "127.0.0.1:9002:3000"
-    environment:
-      - JWT_SECRET=fb94ac2fd4b4ad5326ab514fbdfe1bcb516af02671d71836
-      - NODE_ENV=development
-      - PORT=3000
-      - POSTGRES_USER=postgres
-      - POSTGRES_HOST=62.72.46.248
-      - POSTGRES_DB=inventory_db
-      - POSTGRES_PASSWORD=NZt3C7DPfWnZyy8N
-      - POSTGRES_PORT=5432
+    env_file:
+      - .env
     restart: always
