@@ -159,7 +159,14 @@ export const getTotalProduct = async (req: Request, res: Response) => {
 export const getProductdatabase = async (req: Request, res: Response) => {
   try {
     const productModel = new ProductModel();
-    const total = await productModel.getStockSummary();
+
+    const { page = 1, limit = 10, search = '' } = req.query; // Default values for pagination
+    const pageNumber = parseInt(page as string);
+    const limitNumber = parseInt(limit as string);
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const total = await productModel.getStockSummary(limitNumber, offset, search as string);
+    
     res.json({ success: true, data: total });
   } catch (error) {
     console.error("Error in getStockSummaryController:", error);

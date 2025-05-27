@@ -164,7 +164,7 @@ async update(id: string, data: Partial<Product>): Promise<Product | null> {
     return parseInt(result.rows[0].count, 10);
   }
 
-  async getStockSummary(): Promise<{
+  async getStockSummary(limit: number, offset: number, search?: string): Promise<{
     stockSummary: {
       product_id: string;
       name_en: string;
@@ -178,6 +178,8 @@ async update(id: string, data: Partial<Product>): Promise<Product | null> {
       minimum_stock: number | null;
     }[];
   }> {
+    let query = `SELECT * FROM products`;
+    const values: any[] = [];
     const stockSummaryResult = await pool.query(`
       SELECT 
         p.id AS product_id,
@@ -214,6 +216,12 @@ async update(id: string, data: Partial<Product>): Promise<Product | null> {
       ORDER BY p.name_en;
     `);
 
+     // Add search condition if search term is provided
+  if (search) {
+    query += ` WHERE category_name ILIKE $1`;
+    values.push(`%${search}%`);
+  }
+  
     return {
       stockSummary: stockSummaryResult.rows,
     };
