@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventory-backend
+    ports:
+      - "127.0.0.1:9002:3000"
+    environment:
+      - NODE_ENV=production
+    restart: always
