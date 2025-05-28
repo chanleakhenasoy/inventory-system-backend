@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: inventory-backend
     ports:
-      - "127.0.0.1:9002:3000"
+      - "9002:3000"
     env_file:
       - .env
     restart: always
