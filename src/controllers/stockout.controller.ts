@@ -83,6 +83,17 @@ export const getAllStockouts = async (req: Request, res: Response) => {
       console.error(error);
       res.status(500).json({ message: "Internal server error." });
     }
+  }
+    export const deleteStockout = async (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const stockoutModel = new StockoutModel();
     
-  };
-  
+        await stockoutModel.delete(id);
+    
+        res.status(200).json({ message: "Stockout deleted successfully." });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error." });
+      }
+    }
