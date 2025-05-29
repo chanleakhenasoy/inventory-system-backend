@@ -16,17 +16,14 @@ const userSchema = z.object({
 });
 
 
-
-
 const loginSchema = z.object({
   email: z.string()
-    .email()
-    .regex(/^[\w.-]+@([\w-]+\.)*pse\.ngo$/, {
-      message: "Email must belong institute.pse.ngo or pse.ngo",
+    .email({ message: "Invalid email format" })
+    .regex(/^[\w.-]+@(institute\.)?pse\.ngo$/, {
+      message: "Email must be from pse.ngo or institute.pse.ngo",
     }),
-  password: z.string().min(8),
+  password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
 });
-
 
 const supplierSchema = z.object({          
   supplier_name: z.string().min(1), 
