@@ -106,4 +106,10 @@ async countTotalStockout(): Promise<{ total_quantity: number }> {
   return result.rows[0];
 }
 
+async delete(id: string): Promise<boolean> {
+  const query = `DELETE FROM stock_out WHERE id = $1`;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] > 0;
+}
+
 }
